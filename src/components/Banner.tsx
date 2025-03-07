@@ -7,7 +7,7 @@ interface BannerProps {
 }
 
 const Banner: React.FC<BannerProps> = ({ 
-  imageUrl = '../public/images/Doggy-banner.jpg',
+  imageUrl = 'https://i.imgur.com/xOBUOkG.jpeg',
   title 
 }) => {
   const theme = useTheme();
