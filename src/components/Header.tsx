@@ -30,15 +30,19 @@ import {
   Info, 
   ShoppingCart, 
   ContactMail, 
-  Notifications,
   Person,
   ExitToApp,
   Settings,
   DarkMode,
-  LightMode
+  LightMode,
+  Login,
+  Dashboard
 } from '@mui/icons-material';
 import { scrollToSection, scrollToTop } from '../utils/helpers';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import NotificationMenu from './NotificationMenu';
+import AuthDialog from './AuthDialog';
 
 // Navigation items
 const navItems = [
@@ -53,20 +57,15 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const { totalItems } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
-  const [notificationsAnchor, setNotificationsAnchor] = useState<null | HTMLElement>(null);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isMedium = useMediaQuery(theme.breakpoints.down('md'));
-
-  // Demo notifications
-  const notifications = [
-    { id: 1, text: "New pets available for adoption!" },
-    { id: 2, text: "Your adoption application is under review" }
-  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,12 +93,9 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     setUserMenuAnchor(null);
   };
 
-  const handleOpenNotifications = (event: React.MouseEvent<HTMLElement>) => {
-    setNotificationsAnchor(event.currentTarget);
-  };
-
-  const handleCloseNotifications = () => {
-    setNotificationsAnchor(null);
+  const handleLogout = () => {
+    logout();
+    handleCloseUserMenu();
   };
 
   const toggleDarkMode = () => {
@@ -250,42 +246,46 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                 </Tooltip>
                 
                 {/* Notifications */}
-                <Tooltip title="Notifications">
-                  <IconButton 
-                    color="inherit"
-                    onClick={handleOpenNotifications}
-                  >
-                    <Badge 
-                      badgeContent={notifications.length} 
-                      color="error"
-                      sx={{ 
-                        '& .MuiBadge-badge': { 
-                          backgroundColor: '#3E4E50'
-                        }
-                      }}
-                    >
-                      <Notifications />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
+                <NotificationMenu />
                 
                 {/* User Menu */}
-                <Tooltip title="Account settings">
-                  <IconButton 
-                    onClick={handleOpenUserMenu}
-                    sx={{ p: 0, ml: 1 }}
+                {isAuthenticated ? (
+                  <Tooltip title="Account settings">
+                    <IconButton 
+                      onClick={handleOpenUserMenu}
+                      sx={{ p: 0, ml: 1 }}
+                    >
+                      <Avatar 
+                        alt={user?.full_name || 'User'} 
+                        sx={{ 
+                          width: 36, 
+                          height: 36,
+                          border: '2px solid #3E4E50',
+                          bgcolor: '#3E4E50'
+                        }}
+                      >
+                        {user?.full_name?.charAt(0) || 'U'}
+                      </Avatar>
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    startIcon={<Login />}
+                    onClick={() => setAuthDialogOpen(true)}
+                    sx={{
+                      ml: 1,
+                      color: 'white',
+                      borderColor: 'white',
+                      '&:hover': {
+                        borderColor: '#3E4E50',
+                        bgcolor: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
                   >
-                    <Avatar 
-                      alt="User" 
-                      src="/default-avatar.jpg" 
-                      sx={{ 
-                        width: 36, 
-                        height: 36,
-                        border: '2px solid #3E4E50'
-                      }}
-                    />
-                  </IconButton>
-                </Tooltip>
+                    Login
+                  </Button>
+                )}
               </Box>
               
               {/* User Menu Dropdown */}
@@ -300,6 +300,15 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
+                <MenuItem onClick={() => { 
+                  window.location.hash = 'dashboard'; 
+                  handleCloseUserMenu(); 
+                }}>
+                  <ListItemIcon>
+                    <Dashboard fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText primary="My Dashboard" />
+                </MenuItem>
                 <MenuItem onClick={handleCloseUserMenu}>
                   <ListItemIcon>
                     <Person fontSize="small" />
@@ -319,63 +328,12 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   <ListItemText primary="Settings" />
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={handleCloseUserMenu}>
+                <MenuItem onClick={handleLogout}>
                   <ListItemIcon>
                     <ExitToApp fontSize="small" />
                   </ListItemIcon>
                   <ListItemText primary="Sign Out" />
                 </MenuItem>
-              </Menu>
-              
-              {/* Notifications Menu */}
-              <Menu
-                anchorEl={notificationsAnchor}
-                open={Boolean(notificationsAnchor)}
-                onClose={handleCloseNotifications}
-                PaperProps={{
-                  elevation: 3,
-                  sx: { mt: 1.5, width: 300, borderRadius: 2 }
-                }}
-                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-              >
-                <Typography variant="subtitle1" sx={{ p: 2, fontWeight: 'bold' }}>
-                  Notifications
-                </Typography>
-                <Divider />
-                {notifications.length > 0 ? (
-                  notifications.map((notification) => (
-                    <MenuItem key={notification.id} onClick={handleCloseNotifications}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', py: 0.5 }}>
-                        <Box 
-                          sx={{ 
-                            bgcolor: '#96BBBB', 
-                            width: 8, 
-                            height: 8, 
-                            borderRadius: '50%', 
-                            mt: 1,
-                            mr: 1.5
-                          }} 
-                        />
-                        <Typography variant="body2">{notification.text}</Typography>
-                      </Box>
-                    </MenuItem>
-                  ))
-                ) : (
-                  <MenuItem>
-                    <Typography variant="body2">No new notifications</Typography>
-                  </MenuItem>
-                )}
-                <Divider />
-                <Box sx={{ p: 1.5, textAlign: 'center' }}>
-                  <Button 
-                    size="small" 
-                    onClick={handleCloseNotifications}
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Mark all as read
-                  </Button>
-                </Box>
               </Menu>
             </Box>
           )}
@@ -453,19 +411,40 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           
           {/* User Profile Section in Mobile Menu */}
           <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
-            <Avatar 
-              alt="User" 
-              src="/default-avatar.jpg" 
-              sx={{ width: 50, height: 50, mr: 2 }}
-            />
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold">
-                Guest User
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Sign in to save favorites
-              </Typography>
-            </Box>
+            {isAuthenticated ? (
+              <>
+                <Avatar 
+                  alt={user?.full_name || 'User'} 
+                  sx={{ width: 50, height: 50, mr: 2, bgcolor: '#3E4E50' }}
+                >
+                  {user?.full_name?.charAt(0) || 'U'}
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {user?.full_name || 'User'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user?.email}
+                  </Typography>
+                </Box>
+              </>
+            ) : (
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<Login />}
+                onClick={() => {
+                  setAuthDialogOpen(true);
+                  setMenuOpen(false);
+                }}
+                sx={{
+                  bgcolor: '#96BBBB',
+                  '&:hover': { bgcolor: '#3E4E50' }
+                }}
+              >
+                Sign In
+              </Button>
+            )}
           </Box>
           
           <Divider />
@@ -500,39 +479,38 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           
           <Divider />
           
-          {/* Notifications in Mobile Menu */}
-          <Box sx={{ p: 2 }}>
-            <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, color: '#3E4E50' }}>
-              Notifications
-            </Typography>
-            {notifications.map(notification => (
-              <Box 
-                key={notification.id} 
-                sx={{ 
-                  display: 'flex', 
-                  alignItems: 'flex-start', 
-                  mb: 1,
-                  p: 1,
-                  borderRadius: 1,
-                  bgcolor: 'rgba(150, 187, 187, 0.1)'
-                }}
-              >
-                <Box 
-                  sx={{ 
-                    bgcolor: '#96BBBB', 
-                    width: 8, 
-                    height: 8, 
-                    borderRadius: '50%', 
-                    mt: 1,
-                    mr: 1.5
-                  }} 
-                />
-                <Typography variant="body2">{notification.text}</Typography>
+          {/* User Actions Section */}
+          {isAuthenticated && (
+            <>
+              <Box sx={{ p: 2 }}>
+                <ListItemButton 
+                  onClick={() => { 
+                    window.location.hash = 'dashboard'; 
+                    setMenuOpen(false); 
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    '&:hover': {
+                      bgcolor: 'rgba(150, 187, 187, 0.2)'
+                    }
+                  }}
+                >
+                  <ListItemIcon sx={{ color: '#96BBBB', minWidth: 40 }}>
+                    <Dashboard fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="My Dashboard" 
+                    primaryTypographyProps={{
+                      fontWeight: 'medium',
+                      color: '#3E4E50'
+                    }}
+                  />
+                </ListItemButton>
               </Box>
-            ))}
-          </Box>
-          
-          <Divider />
+              <Divider />
+            </>
+          )}
           
           {/* Settings Section */}
           <Box sx={{ p: 2 }}>
@@ -577,9 +555,45 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                 }}
               />
             </ListItemButton>
+            
+            {/* Logout for Mobile */}
+            {isAuthenticated && (
+              <>
+                <Divider sx={{ my: 1 }} />
+                <ListItemButton 
+                  onClick={() => { 
+                    handleLogout(); 
+                    setMenuOpen(false); 
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    '&:hover': {
+                      bgcolor: 'rgba(255, 0, 0, 0.1)'
+                    }
+                  }}
+                >
+                  <ListItemIcon sx={{ color: 'error.main', minWidth: 40 }}>
+                    <ExitToApp fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Sign Out" 
+                    primaryTypographyProps={{
+                      fontWeight: 'medium',
+                      color: 'error.main'
+                    }}
+                  />
+                </ListItemButton>
+              </>
+            )}
           </Box>
         </Box>
       </Drawer>
+
+      {/* Auth Dialog */}
+      <AuthDialog 
+        open={authDialogOpen} 
+        onClose={() => setAuthDialogOpen(false)} 
+      />
     </AppBar>
   );
 };

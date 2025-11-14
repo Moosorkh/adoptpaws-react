@@ -14,11 +14,13 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Person, Email, Message, Send } from '@mui/icons-material';
+import { api } from '../services/api';
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    subject: '',
     message: ''
   });
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -93,15 +95,19 @@ const ContactForm: React.FC = () => {
     
     setIsSubmitting(true);
     
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Form submitted:', formData);
+      await api.submitContact({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message
+      });
       
       // Reset form
       setFormData({
         name: '',
         email: '',
+        subject: '',
         message: ''
       });
       
@@ -109,6 +115,8 @@ const ContactForm: React.FC = () => {
       setOpenSnackbar(true);
     } catch (error) {
       console.error('Error submitting form:', error);
+      // Show error message
+      alert('Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

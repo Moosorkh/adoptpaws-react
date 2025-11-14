@@ -27,6 +27,7 @@ import {
   KeyboardArrowDown 
 } from '@mui/icons-material';
 import ContactForm from '../components/ContactForm';
+import { api } from '../services/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -58,8 +59,22 @@ const ContactSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [showTabHint, setShowTabHint] = useState(true);
   const [tabClicked, setTabClicked] = useState(false);
+  const [settings, setSettings] = useState<Record<string, string>>({});
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await api.getSettings();
+        setSettings(data);
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+
+    fetchSettings();
+  }, []);
 
   // Hide the hint after some time or after tab interaction
   useEffect(() => {
@@ -77,9 +92,9 @@ const ContactSection: React.FC = () => {
   };
 
   const contactInfo = [
-    { icon: <Email />, title: 'Email', content: 'info@adoptpaws.com' },
-    { icon: <Phone />, title: 'Phone', content: '(555) 123-4567' },
-    { icon: <LocationOn />, title: 'Address', content: '150 Park Row, New York, NY 10007' }
+    { icon: <Email />, title: 'Email', content: settings.contact_email || 'info@adoptpaws.com' },
+    { icon: <Phone />, title: 'Phone', content: settings.contact_phone || '(555) 123-4567' },
+    { icon: <LocationOn />, title: 'Address', content: settings.contact_address || '150 Park Row, New York, NY 10007' }
   ];
 
   return (

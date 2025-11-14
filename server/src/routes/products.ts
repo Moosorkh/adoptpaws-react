@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import pool from '../config/database.js';
+import { sanitizeObject } from '../utils/sanitize.js';
 import type { Product, CreateProductDTO, UpdateProductDTO } from '../types/index.js';
 
 const router = express.Router();
@@ -80,7 +81,8 @@ router.post('/',
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { name, price, description, image_url, category }: CreateProductDTO = req.body;
+      const sanitizedData = sanitizeObject(req.body);
+      const { name, price, description, image_url, category }: CreateProductDTO = sanitizedData;
       
       const result = await pool.query(
         `INSERT INTO products (name, price, description, image_url, category, status) 
@@ -110,7 +112,8 @@ router.put('/:id',
   async (req, res) => {
     try {
       const { id } = req.params;
-      const updates: UpdateProductDTO = req.body;
+      const sanitizedData = sanitizeObject(req.body);
+      const updates: UpdateProductDTO = sanitizedData;
       
       const fields = Object.keys(updates);
       if (fields.length === 0) {

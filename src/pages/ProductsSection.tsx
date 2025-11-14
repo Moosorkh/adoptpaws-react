@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -22,7 +22,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  SelectChangeEvent
+  SelectChangeEvent,
+  CircularProgress
 } from '@mui/material';
 import { 
   ShoppingCart, 
@@ -41,29 +42,58 @@ import {
 } from '@mui/icons-material';
 import ProductCard from '../components/ProductCard';
 import CartItem from '../components/CartItem';
-import { products } from '../data/products';
+import { api } from '../services/api';
+import { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import AuthDialog from '../components/AuthDialog';
 
 interface ProductsSectionProps {
   onOpenShoppingList: () => void;
 }
 
-// Extended product categories
-const categories = [
-  { id: 'all', label: 'All Pets' },
-  { id: 'dogs', label: 'Dogs' },
-  { id: 'cats', label: 'Cats' },
-  { id: 'special-needs', label: 'Special Needs' }
-];
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList }) => {
   const { cart, clearCart, totalItems, totalPrice } = useCart();
+  const { isAuthenticated, token } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('');
   const [adoptionProgress, setAdoptionProgress] = useState(0);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsData, categoriesData] = await Promise.all([
+          api.getProducts(),
+          api.getCategories()
+        ]);
+        setProducts(productsData);
+        setCategories(categoriesData);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load data. Please try again later.');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   
 
   // Filter products based on search and category
@@ -93,25 +123,47 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
     clearCart();
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cart.length === 0) return;
     
-    // Simulate checkout process with progress
+    // Check authentication
+    if (!isAuthenticated) {
+      setAuthDialogOpen(true);
+      return;
+    }
+    
+    // Submit adoption requests for each pet in cart
     setAdoptionProgress(0);
-    const interval = setInterval(() => {
-      setAdoptionProgress(prevProgress => {
-        if (prevProgress >= 100) {
-          clearInterval(interval);
-          setSuccessMessage(`Your adoption request for ${cart.length} pet${cart.length > 1 ? 's' : ''} has been submitted successfully!`);
-          setTimeout(() => {
-            clearCart();
-            setSuccessMessage(null);
-          }, 5000);
-          return 100;
+    let completed = 0;
+    
+    for (const item of cart) {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/adoptions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            product_id: item.id,
+            notes: `Adopting ${item.name}`
+          })
+        });
+        
+        if (response.ok) {
+          completed++;
+          setAdoptionProgress((completed / cart.length) * 100);
         }
-        return prevProgress + 10;
-      });
-    }, 400);
+      } catch (error) {
+        console.error('Error submitting adoption request:', error);
+      }
+    }
+    
+    setSuccessMessage(`Your adoption request${cart.length > 1 ? 's have' : ' has'} been submitted successfully! Check your dashboard for updates.`);
+    setTimeout(() => {
+      clearCart();
+      setSuccessMessage(null);
+    }, 5000);
   };
 
   // Calculate how many more pets needed for free adoption fee
@@ -120,6 +172,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
   
   return (
     <Fade in={true} timeout={800}>
+      <Box>
       <Box id="products-section" sx={{ mb: 8, mt: 2 }}>
         {/* Header Section */}
         <Typography 
@@ -160,6 +213,22 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
           Meet our wonderful pets waiting for their forever homes. Each one has a unique personality and lots of love to give.
         </Typography>
         
+        {/* Loading State */}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress size={60} sx={{ color: '#96BBBB' }} />
+          </Box>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 4, maxWidth: 800, mx: 'auto' }}>
+            {error}
+          </Alert>
+        )}
+
+        {!loading && !error && (
+          <>
         {/* Search and Filter Bar */}
         <Paper 
           elevation={1}
@@ -266,13 +335,13 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               {categories.map((category) => (
                 <Chip 
                   key={category.id}
-                  label={category.label}
+                  label={category.name}
                   clickable
-                  color={activeCategory === category.id ? 'primary' : 'default'}
-                  onClick={() => setActiveCategory(category.id)}
+                  color={activeCategory === category.slug ? 'primary' : 'default'}
+                  onClick={() => setActiveCategory(category.slug)}
                   sx={{ 
-                    bgcolor: activeCategory === category.id ? '#96BBBB' : undefined,
-                    color: activeCategory === category.id ? 'white' : undefined
+                    bgcolor: activeCategory === category.slug ? '#96BBBB' : undefined,
+                    color: activeCategory === category.slug ? 'white' : undefined
                   }}
                 />
               ))}
@@ -294,7 +363,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
             >
               Showing {sortedProducts.length} {sortedProducts.length === 1 ? 'pet' : 'pets'}
               {searchQuery && <> matching "{searchQuery}"</>}
-              {activeCategory !== 'all' && <> in {categories.find(c => c.id === activeCategory)?.label}</>}
+              {activeCategory !== 'all' && <> in {categories.find(c => c.slug === activeCategory)?.name}</>}
             </Typography>
           ) : null}
           
@@ -327,7 +396,11 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
           ) : (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', mb: 8 }}>
               {sortedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  onAuthRequired={() => setAuthDialogOpen(true)}
+                />
               ))}
             </Box>
           )}
@@ -494,6 +567,8 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               }} 
             />
           </Paper>
+        )}
+        </>
         )}
 
         {/* Cart Section */}
@@ -690,6 +765,13 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
             )}
           </Box>
         </Paper>
+      </Box>
+      
+      {/* Auth Dialog */}
+      <AuthDialog 
+        open={authDialogOpen} 
+        onClose={() => setAuthDialogOpen(false)} 
+      />
       </Box>
     </Fade>
   );

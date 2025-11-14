@@ -8,18 +8,85 @@ import {
   Button, 
   Box,
   Grow,
-  Divider
+  Divider,
+  IconButton
 } from '@mui/material';
+import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 interface ProductCardProps {
   product: Product;
+  onAuthRequired?: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAuthRequired }) => {
   const { addToCart } = useCart();
+  const { isAuthenticated, token } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteId, setFavoriteId] = useState<string | null>(null);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  const handleAdopt = () => {
+    if (!isAuthenticated) {
+      if (onAuthRequired) {
+        onAuthRequired();
+      } else {
+        alert('Please log in to adopt a pet');
+      }
+      return;
+    }
+    addToCart(product);
+  };
+
+  const toggleFavorite = async () => {
+    if (!isAuthenticated) {
+      if (onAuthRequired) {
+        onAuthRequired();
+      } else {
+        alert('Please log in to save favorites');
+      }
+      return;
+    }
+
+    try {
+      if (isFavorite && favoriteId) {
+        // Remove from favorites
+        const response = await fetch(`${API_URL}/api/user/favorites/${favoriteId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          setIsFavorite(false);
+          setFavoriteId(null);
+        }
+      } else {
+        // Add to favorites
+        const response = await fetch(`${API_URL}/api/user/favorites`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ product_id: product.id })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setIsFavorite(true);
+          setFavoriteId(data.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
 
   return (
     <Grow in={true} timeout={700} style={{ transformOrigin: '0 0 0' }}>
@@ -45,9 +112,31 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           alt={product.name}
           sx={{ 
             transition: 'transform 0.5s ease',
-            transform: isHovered ? 'scale(1.05)' : 'scale(1)'
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+            position: 'relative'
           }}
         />
+        
+        {/* Favorite Button Overlay */}
+        <IconButton
+          onClick={toggleFavorite}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            bgcolor: 'rgba(255, 255, 255, 0.9)',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 1)',
+            }
+          }}
+        >
+          {isFavorite ? (
+            <Favorite color="error" />
+          ) : (
+            <FavoriteBorder />
+          )}
+        </IconButton>
+        
         <CardContent sx={{ p: 3 }}>
           <Typography 
             gutterBottom 
@@ -102,7 +191,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 fontWeight: 'medium',
                 px: 3
               }}
-              onClick={() => addToCart(product)}
+              onClick={handleAdopt}
             >
               Adopt
             </Button>

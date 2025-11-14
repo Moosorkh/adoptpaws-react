@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -28,12 +28,32 @@ import {
   ExpandMore, 
   ExpandLess 
 } from '@mui/icons-material';
+import { api } from '../services/api';
 
 const AboutSection: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [historyTimeline, setHistoryTimeline] = useState<any[]>([]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [team, history] = await Promise.all([
+          api.getTeamMembers(),
+          api.getHistory()
+        ]);
+        setTeamMembers(team);
+        setHistoryTimeline(history);
+      } catch (error) {
+        console.error('Error fetching about data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -59,50 +79,6 @@ const AboutSection: React.FC = () => {
       icon: <ChildCare />,
       title: "Family Matching",
       description: "We carefully match pets with families based on lifestyle and needs."
-    }
-  ];
-
-  const teamMembers = [
-    {
-      name: "Mehdi Azar",
-      role: "Founder & Director",
-      photo: "https://randomuser.me/api/portraits/men/32.jpg",
-      bio: "Animal lover and community advocate with 15 years of experience in animal welfare."
-    },
-    {
-      name: "Sarah Johnson",
-      role: "Adoption Coordinator",
-      photo: "https://randomuser.me/api/portraits/women/44.jpg",
-      bio: "Former veterinary assistant passionate about finding perfect matches for our pets."
-    },
-    {
-      name: "David Chen",
-      role: "Veterinarian",
-      photo: "https://randomuser.me/api/portraits/men/76.jpg",
-      bio: "Certified veterinarian ensuring all our animals receive the care they need."
-    }
-  ];
-
-  const historyTimeline = [
-    {
-      year: "2012",
-      title: "Foundation",
-      description: "AdoptPaws was founded with just 5 volunteers and a small facility."
-    },
-    {
-      year: "2015",
-      title: "Expansion",
-      description: "Moved to our current location and expanded services to include community education."
-    },
-    {
-      year: "2018",
-      title: "Community Impact",
-      description: "Reached our 1000th successful adoption and launched our outreach program."
-    },
-    {
-      year: "2026",
-      title: "The Future",
-      description: "Expanding digital presence to help even more pets find their forever homes."
     }
   ];
 
