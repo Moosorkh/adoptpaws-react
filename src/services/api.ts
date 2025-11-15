@@ -1,6 +1,6 @@
 import { Product } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 
 class APIError extends Error {
@@ -45,7 +45,7 @@ async function fetchWithErrorHandling(url: string, options?: RequestInit): Promi
 
 export const api = {
   async getProducts(): Promise<Product[]> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/products`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/products`);
     const data = await response.json();
     // Transform backend data to match frontend Product type
     return data.map((item: any) => ({
@@ -59,7 +59,7 @@ export const api = {
   },
 
   async getProduct(id: string): Promise<Product> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/products/${id}`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/products/${id}`);
     const item = await response.json();
     return {
       id: item.id,
@@ -72,22 +72,22 @@ export const api = {
   },
 
   async getSettings(): Promise<Record<string, string>> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/settings`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/settings`);
     return await response.json();
   },
 
   async getTeamMembers(): Promise<any[]> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/team`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/team`);
     return await response.json();
   },
 
   async getHistory(): Promise<any[]> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/history`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/history`);
     return await response.json();
   },
 
   async getCategories(): Promise<any[]> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/categories`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/categories`);
     return await response.json();
   },
 
@@ -97,7 +97,7 @@ export const api = {
     subject?: string;
     message: string;
   }): Promise<{ success: boolean; message: string }> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/contact`, {
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -113,7 +113,7 @@ export const api = {
     products: any[];
     total_amount: number;
   }): Promise<{ success: boolean; message: string }> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/adoptions`, {
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/adoptions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

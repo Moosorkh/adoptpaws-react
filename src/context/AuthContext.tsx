@@ -36,6 +36,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
+  // Use a single source of truth for the API base URL. VITE_API_URL should be the bare server URL
+  // (e.g. http://localhost:3001), and routes append their own `/api/...` paths.
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   useEffect(() => {
@@ -101,8 +103,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Registration failed');
+      // Try to parse JSON error; if it fails (e.g. HTML error page), fall back to generic message
+      try {
+        const error = await response.json();
+        console.error('Registration error:', error);
+        // Handle validation errors array
+        if (error.errors && Array.isArray(error.errors)) {
+          const messages = error.errors.map((e: any) => e.msg).join(', ');
+          throw new Error(messages || 'Registration failed');
+        }
+        throw new Error(error.error || 'Registration failed');
+      } catch (e) {
+        if (e instanceof Error && e.message !== 'Registration failed') {
+          throw e;
+        }
+        throw new Error('Registration failed');
+      }
     }
 
     const data = await response.json();
