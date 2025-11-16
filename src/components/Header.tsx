@@ -43,6 +43,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import NotificationMenu from './NotificationMenu';
 import AuthDialog from './AuthDialog';
+import ProfileDialog from './ProfileDialog';
+import SettingsDialog from './SettingsDialog';
 
 // Navigation items
 const navItems = [
@@ -63,6 +65,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const [darkMode, setDarkMode] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isMedium = useMediaQuery(theme.breakpoints.down('md'));
@@ -81,7 +85,14 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   }, []);
 
   const handleNavigation = (id: string) => {
-    scrollToSection(id);
+    // If on dashboard page, navigate to homepage first
+    if (window.location.hash === '#dashboard') {
+      window.location.hash = '';
+      // Wait for navigation then scroll
+      setTimeout(() => scrollToSection(id), 100);
+    } else {
+      scrollToSection(id);
+    }
     setMenuOpen(false);
   };
 
@@ -99,8 +110,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   };
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    // Here you would implement actual theme switching logic
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('darkMode', String(newMode));
+    window.dispatchEvent(new CustomEvent('darkModeChange', { detail: newMode }));
   };
 
   return (
@@ -117,7 +130,13 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         <Toolbar disableGutters sx={{ py: scrolled ? 0.5 : 1 }}>
           {/* Logo */}
           <Box 
-            onClick={scrollToTop} 
+            onClick={() => {
+              // Navigate to homepage if on dashboard, otherwise scroll to top
+              if (window.location.hash === '#dashboard') {
+                window.location.hash = '';
+              }
+              scrollToTop();
+            }} 
             sx={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -309,7 +328,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   </ListItemIcon>
                   <ListItemText primary="My Dashboard" />
                 </MenuItem>
-                <MenuItem onClick={handleCloseUserMenu}>
+                <MenuItem onClick={() => { 
+                  setProfileDialogOpen(true); 
+                  handleCloseUserMenu(); 
+                }}>
                   <ListItemIcon>
                     <Person fontSize="small" />
                   </ListItemIcon>
@@ -321,7 +343,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   </ListItemIcon>
                   <ListItemText primary={darkMode ? "Light Mode" : "Dark Mode"} />
                 </MenuItem>
-                <MenuItem onClick={handleCloseUserMenu}>
+                <MenuItem onClick={() => { 
+                  setSettingsDialogOpen(true); 
+                  handleCloseUserMenu(); 
+                }}>
                   <ListItemIcon>
                     <Settings fontSize="small" />
                   </ListItemIcon>
@@ -507,6 +532,30 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                     }}
                   />
                 </ListItemButton>
+                <ListItemButton 
+                  onClick={() => { 
+                    setProfileDialogOpen(true); 
+                    setMenuOpen(false); 
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    '&:hover': {
+                      bgcolor: 'rgba(150, 187, 187, 0.2)'
+                    }
+                  }}
+                >
+                  <ListItemIcon sx={{ color: '#96BBBB', minWidth: 40 }}>
+                    <Person fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="My Profile" 
+                    primaryTypographyProps={{
+                      fontWeight: 'medium',
+                      color: '#3E4E50'
+                    }}
+                  />
+                </ListItemButton>
               </Box>
               <Divider />
             </>
@@ -542,6 +591,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                 '&:hover': {
                   bgcolor: 'rgba(150, 187, 187, 0.2)'
                 }
+              }}
+              onClick={() => { 
+                setSettingsDialogOpen(true); 
+                setMenuOpen(false); 
               }}
             >
               <ListItemIcon sx={{ color: '#96BBBB', minWidth: 40 }}>
@@ -593,6 +646,18 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
       <AuthDialog 
         open={authDialogOpen} 
         onClose={() => setAuthDialogOpen(false)} 
+      />
+
+      {/* Profile Dialog */}
+      <ProfileDialog 
+        open={profileDialogOpen} 
+        onClose={() => setProfileDialogOpen(false)} 
+      />
+
+      {/* Settings Dialog */}
+      <SettingsDialog 
+        open={settingsDialogOpen} 
+        onClose={() => setSettingsDialogOpen(false)} 
       />
     </AppBar>
   );
