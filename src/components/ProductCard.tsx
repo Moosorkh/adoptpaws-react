@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -19,16 +19,29 @@ import { useAuth } from '../context/AuthContext';
 interface ProductCardProps {
   product: Product;
   onAuthRequired?: () => void;
+  initialFavorite?: { id: string, product_id: string } | null;
+  onFavoriteChange?: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAuthRequired }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ 
+  product, 
+  onAuthRequired,
+  initialFavorite = null,
+  onFavoriteChange
+}) => {
   const { addToCart } = useCart();
   const { isAuthenticated, token } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [favoriteId, setFavoriteId] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(!!initialFavorite);
+  const [favoriteId, setFavoriteId] = useState<string | null>(initialFavorite?.id || null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  // Update favorite state when initialFavorite prop changes
+  useEffect(() => {
+    setIsFavorite(!!initialFavorite);
+    setFavoriteId(initialFavorite?.id || null);
+  }, [initialFavorite]);
 
   const handleAdopt = () => {
     if (!isAuthenticated) {
@@ -42,7 +55,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAuthRequired }) =>
     addToCart(product);
   };
 
-  const toggleFavorite = async () => {
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    
     if (!isAuthenticated) {
       if (onAuthRequired) {
         onAuthRequired();
@@ -65,6 +80,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAuthRequired }) =>
         if (response.ok) {
           setIsFavorite(false);
           setFavoriteId(null);
+          if (onFavoriteChange) onFavoriteChange();
+        } else {
+          console.error('Failed to remove favorite:', await response.text());
         }
       } else {
         // Add to favorites
@@ -81,6 +99,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAuthRequired }) =>
           const data = await response.json();
           setIsFavorite(true);
           setFavoriteId(data.id);
+          if (onFavoriteChange) onFavoriteChange();
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to add favorite:', errorData);
         }
       }
     } catch (error) {
@@ -119,7 +141,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAuthRequired }) =>
         
         {/* Favorite Button Overlay */}
         <IconButton
-          onClick={toggleFavorite}
+          onClick={(e) => toggleFavorite(e)}
           sx={{
             position: 'absolute',
             top: 8,
@@ -127,11 +149,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAuthRequired }) =>
             bgcolor: 'rgba(255, 255, 255, 0.9)',
             '&:hover': {
               bgcolor: 'rgba(255, 255, 255, 1)',
-            }
+            },
+            zIndex: 1
           }}
         >
           {isFavorite ? (
-            <Favorite color="error" />
+            <Favorite sx={{ color: '#ff1744' }} />
           ) : (
             <FavoriteBorder />
           )}

@@ -31,10 +31,11 @@ router.get('/unread', authenticateToken, async (req: any, res) => {
       [req.user.id]
     );
 
-    res.json({ unread: parseInt(result.rows[0].count) });
+    const count = parseInt(result.rows[0]?.count || '0', 10);
+    res.json({ unread: count });
   } catch (error) {
     logger.error('Error fetching unread count:', error);
-    res.status(500).json({ error: 'Failed to fetch unread count' });
+    res.status(500).json({ error: 'Failed to fetch unread count', unread: 0 });
   }
 });
 

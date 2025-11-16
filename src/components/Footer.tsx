@@ -1,9 +1,28 @@
 import React from 'react';
 import { Box, Typography, Container, Grid, Link, IconButton, Divider } from '@mui/material';
 import { Facebook, Twitter, Instagram, Pets, Email, Phone, LocationOn } from '@mui/icons-material';
-import { scrollToSection } from '../utils/helpers';
+import { scrollToSection, scrollToTop } from '../utils/helpers';
 
 const Footer: React.FC = () => {
+  const handleNavigation = (id: string) => {
+    // If on dashboard page, navigate to homepage first
+    if (window.location.hash === '#dashboard') {
+      window.location.hash = '';
+      // Wait for navigation then scroll
+      setTimeout(() => scrollToSection(id), 100);
+    } else {
+      scrollToSection(id);
+    }
+  };
+
+  const handleLogoClick = () => {
+    // Navigate to homepage if on dashboard, otherwise scroll to top
+    if (window.location.hash === '#dashboard') {
+      window.location.hash = '';
+    }
+    scrollToTop();
+  };
+
   return (
     <Box 
       component="footer" 
@@ -18,7 +37,15 @@ const Footer: React.FC = () => {
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           <Grid item xs={12} sm={4}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Box 
+              onClick={handleLogoClick}
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                mb: 2,
+                cursor: 'pointer'
+              }}
+            >
               <Pets sx={{ mr: 1, color: '#3E4E50', fontSize: 28 }} />
               <Typography variant="h5" sx={{ color: '#3E4E50', fontWeight: 'bold' }}>
                 AdoptPaws
@@ -48,7 +75,7 @@ const Footer: React.FC = () => {
               <Link 
                 component="button" 
                 underline="none" 
-                onClick={() => scrollToSection('about-section')}
+                onClick={() => handleNavigation('about-section')}
                 sx={{ 
                   display: 'block', 
                   mb: 1, 
@@ -61,7 +88,7 @@ const Footer: React.FC = () => {
               <Link 
                 component="button" 
                 underline="none" 
-                onClick={() => scrollToSection('products-section')}
+                onClick={() => handleNavigation('products-section')}
                 sx={{ 
                   display: 'block', 
                   mb: 1, 
@@ -74,7 +101,7 @@ const Footer: React.FC = () => {
               <Link 
                 component="button" 
                 underline="none" 
-                onClick={() => scrollToSection('contact-section')}
+                onClick={() => handleNavigation('contact-section')}
                 sx={{ 
                   display: 'block', 
                   mb: 1, 

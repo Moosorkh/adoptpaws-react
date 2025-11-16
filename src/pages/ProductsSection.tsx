@@ -72,6 +72,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
   const [sortBy, setSortBy] = useState('');
   const [adoptionProgress, setAdoptionProgress] = useState(0);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<{id: string, product_id: string}[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,6 +95,34 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
 
     fetchData();
   }, []);
+
+  // Fetch favorites when user is authenticated
+  const fetchFavorites = async () => {
+    if (!isAuthenticated || !token) {
+      setFavorites([]);
+      return;
+    }
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${API_URL}/api/user/favorites`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFavorites(data);
+      }
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFavorites();
+  }, [isAuthenticated, token]);
   
 
   // Filter products based on search and category
@@ -395,13 +424,18 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
             </Box>
           ) : (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', mb: 8 }}>
-              {sortedProducts.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  onAuthRequired={() => setAuthDialogOpen(true)}
-                />
-              ))}
+              {sortedProducts.map((product) => {
+                const productFavorite = favorites.find(fav => fav.product_id === product.id);
+                return (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onAuthRequired={() => setAuthDialogOpen(true)}
+                    initialFavorite={productFavorite || null}
+                    onFavoriteChange={fetchFavorites}
+                  />
+                );
+              })}
             </Box>
           )}
         </Box>

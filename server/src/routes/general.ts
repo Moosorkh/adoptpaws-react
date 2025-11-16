@@ -103,13 +103,19 @@ router.post('/contact',
 // POST /api/adoptions - Submit adoption request (requires authentication)
 router.post('/adoptions',
   authenticateToken,
-  body('product_id').isUUID(),
+  body('product_id').isString().trim().notEmpty(),
   body('notes').optional().isString().trim(),
   handleValidationErrors,
   async (req: any, res) => {
     try {
       const sanitizedData = sanitizeObject(req.body);
       const { product_id, notes } = sanitizedData;
+
+      // Validate UUID format manually (more lenient)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(product_id)) {
+        return res.status(400).json({ error: 'Invalid product_id format' });
+      }
 
       // Check if product exists
       const product = await pool.query('SELECT id, name FROM products WHERE id = $1', [product_id]);

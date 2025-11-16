@@ -58,12 +58,13 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
 -- Adoption requests table
 CREATE TABLE IF NOT EXISTS adoption_requests (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
   customer_name VARCHAR(255) NOT NULL,
   customer_email VARCHAR(255) NOT NULL,
   customer_phone VARCHAR(50),
   customer_address TEXT,
-  products JSONB NOT NULL,
-  total_amount DECIMAL(10, 2) NOT NULL,
+  products JSONB,
+  total_amount DECIMAL(10, 2),
   status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

@@ -29,6 +29,7 @@ import {
   PetsOutlined
 } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import CartItem from '../components/CartItem';
 
 interface ShoppingListModalProps {
@@ -38,6 +39,7 @@ interface ShoppingListModalProps {
 
 const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) => {
   const { cart, clearCart, totalItems, totalPrice } = useCart();
+  const { user, token, isAuthenticated } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
@@ -46,6 +48,9 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [error, setError] = useState('');
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const steps = ['Review Cart', 'Adoption Details', 'Confirmation'];
 
@@ -58,11 +63,41 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (activeStep === steps.length - 1) {
-      // Process adoption
+      // Process adoption - create adoption request for each pet
+      if (!isAuthenticated || !token || !user) {
+        setError('Please log in to complete adoption');
+        return;
+      }
+
       setIsProcessing(true);
-      setTimeout(() => {
+      setError('');
+
+      try {
+        // Create an adoption request for each pet in the cart
+        const adoptionPromises = cart.map(async (item) => {
+          const response = await fetch(`${API_URL}/api/user/adoption-requests`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              product_id: item.id,
+              notes: `Adoption request for ${item.name}`
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to submit adoption request for ${item.name}`);
+          }
+
+          return response.json();
+        });
+
+        await Promise.all(adoptionPromises);
+
         setIsProcessing(false);
         setShowSuccessAlert(true);
         clearCart();
@@ -70,8 +105,12 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
         setTimeout(() => {
           setActiveStep(0);
           setShowSuccessAlert(false);
+          handleCloseModal();
         }, 3000);
-      }, 1500);
+      } catch (err: any) {
+        setIsProcessing(false);
+        setError(err.message || 'Failed to submit adoption request');
+      }
     } else {
       setActiveStep(prevStep => prevStep + 1);
     }
@@ -302,6 +341,16 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
                 </Step>
               ))}
             </Stepper>
+            
+            {error && (
+              <Alert 
+                severity="error" 
+                sx={{ mb: 2 }}
+                onClose={() => setError('')}
+              >
+                {error}
+              </Alert>
+            )}
             
             {renderStepContent()}
             

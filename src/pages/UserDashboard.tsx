@@ -70,7 +70,7 @@ const UserDashboard: React.FC = () => {
     } else if (tabValue === 1) {
       fetchFavorites();
     }
-  }, [tabValue]);
+  }, [tabValue, token]);
 
   const fetchAdoptionRequests = async () => {
     if (!token) return;

@@ -34,6 +34,38 @@ router.get('/adoption-requests', authenticateToken, async (req: any, res) => {
   }
 });
 
+// POST /api/user/adoption-requests - Create adoption request
+router.post('/adoption-requests',
+  authenticateToken,
+  body('product_id').isString().trim().notEmpty(),
+  body('notes').optional().isString().trim(),
+  handleValidationErrors,
+  async (req: any, res) => {
+    try {
+      const { product_id, notes } = req.body;
+
+      // Validate UUID format manually (more lenient)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(product_id)) {
+        return res.status(400).json({ error: 'Invalid product_id format' });
+      }
+
+      const result = await pool.query(
+        `INSERT INTO adoption_requests (user_id, product_id, customer_name, customer_email, notes, status) 
+         VALUES ($1, $2, $3, $4, $5, 'pending') 
+         RETURNING *`,
+        [req.user.id, product_id, req.user.full_name || 'User', req.user.email, notes || null]
+      );
+
+      logger.info(`User ${req.user.id} created adoption request for product ${product_id}`);
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      logger.error('Error creating adoption request:', error);
+      res.status(500).json({ error: 'Failed to create adoption request' });
+    }
+  }
+);
+
 // GET /api/user/favorites - Get user's favorite pets
 router.get('/favorites', authenticateToken, async (req: any, res) => {
   try {
@@ -59,11 +91,17 @@ router.get('/favorites', authenticateToken, async (req: any, res) => {
 // POST /api/user/favorites - Add pet to favorites
 router.post('/favorites',
   authenticateToken,
-  body('product_id').isUUID(),
+  body('product_id').isString().trim().notEmpty(),
   handleValidationErrors,
   async (req: any, res) => {
     try {
       const { product_id } = req.body;
+
+      // Validate UUID format manually (more lenient)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(product_id)) {
+        return res.status(400).json({ error: 'Invalid product_id format' });
+      }
 
       // Check if already favorited
       const existing = await pool.query(
@@ -114,7 +152,7 @@ router.delete('/favorites/:id', authenticateToken, async (req: any, res) => {
 // POST /api/user/reviews - Submit a review
 router.post('/reviews',
   authenticateToken,
-  body('product_id').isUUID(),
+  body('product_id').isString().trim().notEmpty(),
   body('rating').isInt({ min: 1, max: 5 }),
   body('comment').optional().isString().trim(),
   handleValidationErrors,
@@ -122,6 +160,12 @@ router.post('/reviews',
     try {
       const sanitizedData = sanitizeObject(req.body);
       const { product_id, rating, comment } = sanitizedData;
+
+      // Validate UUID format manually (more lenient)
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(product_id)) {
+        return res.status(400).json({ error: 'Invalid product_id format' });
+      }
 
       // Check if user has already reviewed this product
       const existing = await pool.query(
