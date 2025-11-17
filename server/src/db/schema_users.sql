@@ -86,5 +86,5 @@ CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id, is_approve
 -- Create default admin user (password: admin123 - CHANGE IN PRODUCTION!)
 -- Password hash is bcrypt hash of 'admin123'
 INSERT INTO users (email, password_hash, full_name, role, email_verified) VALUES
-  ('admin@adoptpaws.com', '$2b$10$rqQvZ8vYhKqKqKQZ8vYhKeVqQvZ8vYhKqKqKQZ8vYhKeVqQvZ8vYh', 'Admin User', 'admin', true)
+  ('admin@adoptpaws.com', '$2b$10$tfgKtt7.a8XerDN.OqkDDOLa6spTRKenwTqoyeTqGNQ882zDuLeUi', 'Admin User', 'admin', true)
 ON CONFLICT (email) DO NOTHING;

@@ -138,9 +138,9 @@ router.post('/adoptions',
 
       const result = await pool.query(
         `INSERT INTO adoption_requests 
-         (user_id, product_id, notes, status) 
-         VALUES ($1, $2, $3, 'pending') RETURNING *`,
-        [req.user.id, product_id, notes || null]
+         (user_id, product_id, customer_name, customer_email, notes, status) 
+         VALUES ($1, $2, $3, $4, $5, 'pending') RETURNING *`,
+        [req.user.id, product_id, req.user.full_name, req.user.email, notes || null]
       );
 
       // Create a notification for admins

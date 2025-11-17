@@ -41,6 +41,7 @@ import {
 import { scrollToSection, scrollToTop } from '../utils/helpers';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useThemeMode } from '../context/ThemeContext';
 import NotificationMenu from './NotificationMenu';
 import AuthDialog from './AuthDialog';
 import ProfileDialog from './ProfileDialog';
@@ -60,9 +61,9 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const { totalItems } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { darkMode, toggleDarkMode } = useThemeMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -107,13 +108,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const handleLogout = () => {
     logout();
     handleCloseUserMenu();
-  };
-
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem('darkMode', String(newMode));
-    window.dispatchEvent(new CustomEvent('darkModeChange', { detail: newMode }));
   };
 
   return (
