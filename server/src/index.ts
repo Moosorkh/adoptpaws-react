@@ -10,6 +10,7 @@ import notificationsRouter from './routes/notifications.js';
 import messagesRouter from './routes/messages.js';
 import userRouter from './routes/user.js';
 import preferencesRouter from './routes/preferences.js';
+import aboutRouter from './routes/about.js';
 import pool from './config/database.js';
 import { logger } from './utils/logger.js';
 
@@ -49,6 +50,7 @@ app.use('/api/notifications', notificationsRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/user', userRouter);
 app.use('/api/preferences', preferencesRouter);
+app.use('/api/about', aboutRouter);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

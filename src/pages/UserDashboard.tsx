@@ -28,9 +28,12 @@ import {
   Message,
   CheckCircle,
   HourglassEmpty,
-  Cancel
+  Cancel,
+  AdminPanelSettings
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import AdminPetsPanel from '../components/AdminPetsPanel';
+import PetFormDialog from '../components/PetFormDialog';
 
 interface AdoptionRequest {
   id: string;
@@ -61,8 +64,13 @@ const UserDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [detailsDialog, setDetailsDialog] = useState<AdoptionRequest | null>(null);
+  const [petFormDialog, setPetFormDialog] = useState<{open: boolean; pet: any | null}>({
+    open: false,
+    pet: null
+  });
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
     if (tabValue === 0) {
@@ -70,6 +78,7 @@ const UserDashboard: React.FC = () => {
     } else if (tabValue === 1) {
       fetchFavorites();
     }
+    // Admin tab doesn't need initial fetch (AdminPetsPanel handles its own)
   }, [tabValue, token]);
 
   const fetchAdoptionRequests = async () => {
@@ -192,6 +201,7 @@ const UserDashboard: React.FC = () => {
         >
           <Tab icon={<Pets />} label="My Adoption Requests" />
           <Tab icon={<Favorite />} label="My Favorites" />
+          {isAdmin && <Tab icon={<AdminPanelSettings />} label="Admin Panel" />}
         </Tabs>
       </Paper>
 
@@ -410,6 +420,25 @@ const UserDashboard: React.FC = () => {
           </>
         )}
       </Dialog>
+
+      {/* Admin Panel Tab */}
+      {isAdmin && tabValue === 2 && (
+        <AdminPetsPanel
+          onEdit={(pet) => setPetFormDialog({ open: true, pet })}
+          onAdd={() => setPetFormDialog({ open: true, pet: null })}
+        />
+      )}
+
+      {/* Pet Form Dialog */}
+      <PetFormDialog
+        open={petFormDialog.open}
+        onClose={() => setPetFormDialog({ open: false, pet: null })}
+        pet={petFormDialog.pet}
+        onSuccess={() => {
+          setPetFormDialog({ open: false, pet: null });
+          // Trigger refresh in AdminPetsPanel if needed
+        }}
+      />
     </Container>
   );
 };

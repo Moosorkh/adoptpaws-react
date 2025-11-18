@@ -42,6 +42,7 @@ import { scrollToSection, scrollToTop } from '../utils/helpers';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import NotificationMenu from './NotificationMenu';
 import AuthDialog from './AuthDialog';
 import ProfileDialog from './ProfileDialog';
@@ -62,6 +63,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const { totalItems } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useThemeMode();
+  const { isDarkModeEnabled, loading: featureFlagsLoading } = useFeatureFlags();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
@@ -71,6 +73,19 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isMedium = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Debug log
+  useEffect(() => {
+    console.log('Header - isDarkModeEnabled:', isDarkModeEnabled, 'loading:', featureFlagsLoading);
+  }, [isDarkModeEnabled, featureFlagsLoading]);
+
+  // Force light mode if dark mode feature is disabled
+  useEffect(() => {
+    if (!featureFlagsLoading && !isDarkModeEnabled && darkMode) {
+      console.log('Forcing light mode because feature is disabled');
+      toggleDarkMode();
+    }
+  }, [isDarkModeEnabled, darkMode, toggleDarkMode, featureFlagsLoading]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -331,12 +346,14 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
                   </ListItemIcon>
                   <ListItemText primary="My Profile" />
                 </MenuItem>
-                <MenuItem onClick={toggleDarkMode}>
-                  <ListItemIcon>
-                    {darkMode ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
-                  </ListItemIcon>
-                  <ListItemText primary={darkMode ? "Light Mode" : "Dark Mode"} />
-                </MenuItem>
+                {isDarkModeEnabled && (
+                  <MenuItem onClick={toggleDarkMode}>
+                    <ListItemIcon>
+                      {darkMode ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
+                    </ListItemIcon>
+                    <ListItemText primary={darkMode ? "Light Mode" : "Dark Mode"} />
+                  </MenuItem>
+                )}
                 <MenuItem onClick={() => { 
                   setSettingsDialogOpen(true); 
                   handleCloseUserMenu(); 
@@ -557,27 +574,29 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
           
           {/* Settings Section */}
           <Box sx={{ p: 2 }}>
-            <ListItemButton 
-              onClick={toggleDarkMode}
-              sx={{
-                borderRadius: 2,
-                mb: 1,
-                '&:hover': {
-                  bgcolor: 'rgba(150, 187, 187, 0.2)'
-                }
-              }}
-            >
-              <ListItemIcon sx={{ color: '#96BBBB', minWidth: 40 }}>
-                {darkMode ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
-              </ListItemIcon>
-              <ListItemText 
-                primary={darkMode ? "Light Mode" : "Dark Mode"} 
-                primaryTypographyProps={{
-                  fontWeight: 'medium',
-                  color: '#3E4E50'
+            {isDarkModeEnabled && (
+              <ListItemButton 
+                onClick={toggleDarkMode}
+                sx={{
+                  borderRadius: 2,
+                  mb: 1,
+                  '&:hover': {
+                    bgcolor: 'rgba(150, 187, 187, 0.2)'
+                  }
                 }}
-              />
-            </ListItemButton>
+              >
+                <ListItemIcon sx={{ color: '#96BBBB', minWidth: 40 }}>
+                  {darkMode ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={darkMode ? "Light Mode" : "Dark Mode"} 
+                  primaryTypographyProps={{
+                    fontWeight: 'medium',
+                    color: '#3E4E50'
+                  }}
+                />
+              </ListItemButton>
+            )}
             
             <ListItemButton 
               sx={{

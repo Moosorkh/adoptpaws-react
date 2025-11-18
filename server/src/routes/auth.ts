@@ -35,6 +35,19 @@ export const authenticateToken = (req: any, res: express.Response, next: express
   }
 };
 
+// Middleware to verify admin role
+export const isAdmin = (req: any, res: express.Response, next: express.NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required.' });
+  }
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required.' });
+  }
+
+  next();
+};
+
 // POST /api/auth/register - Register new user
 router.post('/register',
   body('email').isEmail().normalizeEmail(),

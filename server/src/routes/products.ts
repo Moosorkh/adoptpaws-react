@@ -2,6 +2,7 @@ import express from 'express';
 import { body, param, query, validationResult } from 'express-validator';
 import pool from '../config/database.js';
 import { sanitizeObject } from '../utils/sanitize.js';
+import { authenticateToken, isAdmin } from './auth.js';
 import type { Product, CreateProductDTO, UpdateProductDTO } from '../types/index.js';
 
 const router = express.Router();
@@ -71,24 +72,43 @@ router.get('/:id',
   }
 );
 
-// POST /api/products - Create new product
+// POST /api/products - Create new product (Admin only)
 router.post('/',
+  authenticateToken,
+  isAdmin,
   body('name').isString().trim().isLength({ min: 1, max: 255 }),
+  body('species').isString().trim(),
+  body('breed').optional().isString().trim(),
+  body('age').isInt({ min: 0 }),
+  body('gender').isIn(['male', 'female', 'unknown']),
   body('price').isFloat({ min: 0 }),
   body('description').isString().trim(),
-  body('image_url').isURL(),
+  body('image_url').optional().isString(),
+  body('location').optional().isString().trim(),
+  body('medical_history').optional().isString().trim(),
+  body('personality_traits').optional().isString().trim(),
   body('category').isString().isIn(['dogs', 'cats', 'special-needs']),
   handleValidationErrors,
   async (req, res) => {
     try {
       const sanitizedData = sanitizeObject(req.body);
-      const { name, price, description, image_url, category }: CreateProductDTO = sanitizedData;
+      const { 
+        name, species, breed, age, gender, price, description, 
+        image_url, location, medical_history, personality_traits, category 
+      } = sanitizedData;
       
       const result = await pool.query(
-        `INSERT INTO products (name, price, description, image_url, category, status) 
-         VALUES ($1, $2, $3, $4, $5, 'available') 
-         RETURNING *`,
-        [name, price, description, image_url, category]
+        `INSERT INTO products (
+          name, species, breed, age, gender, price, description, 
+          image_url, location, medical_history, personality_traits, 
+          category, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'available') 
+        RETURNING *`,
+        [
+          name, species, breed || null, age, gender, price, description,
+          image_url || null, location || null, medical_history || null, 
+          personality_traits || null, category
+        ]
       );
       
       res.status(201).json(result.rows[0]);
@@ -99,13 +119,22 @@ router.post('/',
   }
 );
 
-// PUT /api/products/:id - Update product
+// PUT /api/products/:id - Update product (Admin only)
 router.put('/:id',
+  authenticateToken,
+  isAdmin,
   param('id').isUUID(),
   body('name').optional().isString().trim().isLength({ min: 1, max: 255 }),
+  body('species').optional().isString().trim(),
+  body('breed').optional().isString().trim(),
+  body('age').optional().isInt({ min: 0 }),
+  body('gender').optional().isIn(['male', 'female', 'unknown']),
   body('price').optional().isFloat({ min: 0 }),
   body('description').optional().isString().trim(),
-  body('image_url').optional().isURL(),
+  body('image_url').optional().isString(),
+  body('location').optional().isString().trim(),
+  body('medical_history').optional().isString().trim(),
+  body('personality_traits').optional().isString().trim(),
   body('category').optional().isString().isIn(['dogs', 'cats', 'special-needs']),
   body('status').optional().isIn(['available', 'pending', 'adopted']),
   handleValidationErrors,
@@ -141,13 +170,19 @@ router.put('/:id',
   }
 );
 
-// DELETE /api/products/:id - Delete product
+// DELETE /api/products/:id - Delete product (Admin only)
 router.delete('/:id',
+  authenticateToken,
+  isAdmin,
   param('id').isUUID(),
   handleValidationErrors,
   async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Delete related adoption requests first
+      await pool.query('DELETE FROM adoption_requests WHERE product_id = $1', [id]);
+      
       const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
       
       if (result.rows.length === 0) {

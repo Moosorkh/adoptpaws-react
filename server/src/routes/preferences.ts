@@ -39,7 +39,8 @@ router.put('/', authenticateToken, async (req: any, res) => {
       sms_notifications,
       marketing_emails,
       adoption_updates,
-      message_alerts
+      message_alerts,
+      dark_mode_enabled
     } = req.body;
 
     // Check if preferences exist
@@ -54,8 +55,8 @@ router.put('/', authenticateToken, async (req: any, res) => {
       result = await pool.query(
         `INSERT INTO user_preferences 
          (user_id, email_notifications, push_notifications, sms_notifications, 
-          marketing_emails, adoption_updates, message_alerts) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+          marketing_emails, adoption_updates, message_alerts, dark_mode_enabled) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
         [
           req.user.id,
           email_notifications ?? true,
@@ -63,7 +64,8 @@ router.put('/', authenticateToken, async (req: any, res) => {
           sms_notifications ?? false,
           marketing_emails ?? false,
           adoption_updates ?? true,
-          message_alerts ?? true
+          message_alerts ?? true,
+          dark_mode_enabled ?? true
         ]
       );
     } else {
@@ -95,6 +97,10 @@ router.put('/', authenticateToken, async (req: any, res) => {
       if (message_alerts !== undefined) {
         updates.push(`message_alerts = $${paramCount++}`);
         values.push(message_alerts);
+      }
+      if (dark_mode_enabled !== undefined) {
+        updates.push(`dark_mode_enabled = $${paramCount++}`);
+        values.push(dark_mode_enabled);
       }
 
       if (updates.length === 0) {

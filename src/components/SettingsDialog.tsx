@@ -41,6 +41,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [marketingEmails, setMarketingEmails] = useState(false);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(true); // Controls feature availability
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -70,6 +71,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
         setPushNotifications(data.push_notifications ?? true);
         setSmsNotifications(data.sms_notifications ?? false);
         setMarketingEmails(data.marketing_emails ?? false);
+        setDarkModeEnabled(data.dark_mode_enabled ?? true);
       }
     } catch (err) {
       console.error('Failed to fetch preferences:', err);
@@ -97,12 +99,15 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
           email_notifications: emailNotifications,
           push_notifications: pushNotifications,
           sms_notifications: smsNotifications,
-          marketing_emails: marketingEmails
+          marketing_emails: marketingEmails,
+          dark_mode_enabled: darkModeEnabled
         })
       });
 
       if (response.ok) {
         setSaveSuccess(true);
+        // Dispatch event to notify other components
+        window.dispatchEvent(new Event('preferencesUpdated'));
         setTimeout(() => {
           setSaveSuccess(false);
           onClose();
@@ -156,7 +161,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
               </ListItemIcon>
               <ListItemText
                 primary="Email Notifications"
-                secondary="Receive email updates about your adoption requests"
+                secondary="Enable email notification features"
               />
               <FormControlLabel
                 control={
@@ -175,7 +180,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
               </ListItemIcon>
               <ListItemText
                 primary="Push Notifications"
-                secondary="Get notified about new messages and updates"
+                secondary="Enable browser push notifications"
               />
               <FormControlLabel
                 control={
@@ -194,7 +199,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
               </ListItemIcon>
               <ListItemText
                 primary="SMS Notifications"
-                secondary="Receive important updates via text message"
+                secondary="Enable SMS text message notifications"
               />
               <FormControlLabel
                 control={
@@ -213,7 +218,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
               </ListItemIcon>
               <ListItemText
                 primary="Marketing Emails"
-                secondary="Get updates about new pets and special events"
+                secondary="Receive newsletters and promotional emails"
               />
               <FormControlLabel
                 control={
@@ -239,13 +244,22 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
               </ListItemIcon>
               <ListItemText
                 primary="Dark Mode"
-                secondary="Switch between light and dark theme"
+                secondary="Enable dark mode feature in profile menu"
               />
               <FormControlLabel
                 control={
                   <Switch
-                    checked={darkMode}
-                    onChange={toggleDarkMode}
+                    checked={darkModeEnabled}
+                    onChange={(e) => {
+                      const enabled = e.target.checked;
+                      console.log('Dark mode toggle changed to:', enabled);
+                      setDarkModeEnabled(enabled);
+                      // If disabling, force light mode
+                      if (!enabled && darkMode) {
+                        console.log('Disabling dark mode, forcing light mode');
+                        toggleDarkMode();
+                      }
+                    }}
                     color="primary"
                   />
                 }

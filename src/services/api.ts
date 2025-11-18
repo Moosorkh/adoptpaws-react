@@ -77,12 +77,12 @@ export const api = {
   },
 
   async getTeamMembers(): Promise<any[]> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/team`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/about/team`);
     return await response.json();
   },
 
   async getHistory(): Promise<any[]> {
-    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/history`);
+    const response = await fetchWithErrorHandling(`${API_BASE_URL}/api/about/history`);
     return await response.json();
   },
 
