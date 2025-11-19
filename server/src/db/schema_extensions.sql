@@ -1,3 +1,6 @@
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- Settings table for site configuration
 CREATE TABLE IF NOT EXISTS settings (
   id SERIAL PRIMARY KEY,

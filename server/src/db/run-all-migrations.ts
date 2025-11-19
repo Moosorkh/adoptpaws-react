@@ -8,9 +8,9 @@ const __dirname = dirname(__filename);
 
 // Migration files in order
 const migrations = [
-  'schema_extensions.sql',  // UUID extension first
-  'schema.sql',             // Main schema
-  'schema_users.sql',       // Users and auth
+  'schema.sql',             // Main schema first (creates products table)
+  'schema_extensions.sql',  // Extensions and additional tables (needs products table)
+  'schema_users.sql',       // Users and auth (needs adoption_requests)
   'schema_team.sql',        // Team and history
   'migration_add_missing_fields.sql'  // Additional fields
 ];
