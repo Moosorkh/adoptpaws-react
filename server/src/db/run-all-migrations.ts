@@ -1,8 +1,7 @@
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import pool from '../config/database.js';
-import { logger } from '../utils/logger.js';
+import { pool } from '../config/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,26 +19,27 @@ async function runMigrations() {
   const client = await pool.connect();
   
   try {
-    logger.info('Starting database migrations...');
+    console.log('Starting database migrations...');
     
     for (const migration of migrations) {
-      logger.info(`Running migration: ${migration}`);
+      console.log(`Running migration: ${migration}`);
       
       const migrationPath = join(__dirname, migration);
       const sql = readFileSync(migrationPath, 'utf-8');
       
       await client.query(sql);
       
-      logger.info(`✓ Completed: ${migration}`);
+      console.log(`✓ Completed: ${migration}`);
     }
     
-    logger.info('All migrations completed successfully!');
+    console.log('All migrations completed successfully!');
     process.exit(0);
   } catch (error) {
-    logger.error('Migration failed:', error);
+    console.error('Migration failed:', error);
     process.exit(1);
   } finally {
     client.release();
+    await pool.end();
   }
 }
 

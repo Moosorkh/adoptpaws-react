@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import productsRouter from './routes/products.js';
 import generalRouter from './routes/general.js';
 import authRouter from './routes/auth.js';
@@ -15,6 +17,9 @@ import pool from './config/database.js';
 import { logger } from './utils/logger.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -56,6 +61,20 @@ app.use('/api/messages', messagesRouter);
 app.use('/api/user', userRouter);
 app.use('/api/preferences', preferencesRouter);
 app.use('/api/about', aboutRouter);
+
+// Serve static frontend files in production
+if (process.env.NODE_ENV === 'production') {
+  const frontendPath = path.join(__dirname, '../../dist');
+  app.use(express.static(frontendPath));
+  
+  // Catch-all route to serve index.html for SPA routing
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
