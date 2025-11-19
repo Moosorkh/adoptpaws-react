@@ -21,6 +21,8 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   dark_mode_enabled: true, // Dark mode available by default
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 export const useFeatureFlags = () => {
   const { isAuthenticated } = useAuth();
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
@@ -36,7 +38,7 @@ export const useFeatureFlags = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3001/api/preferences', {
+      const response = await fetch(`${API_URL}/api/preferences`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -79,7 +81,7 @@ export const useFeatureFlags = () => {
     if (isAuthenticated) {
       try {
         const token = localStorage.getItem('token');
-        await fetch('http://localhost:3001/api/preferences', {
+        await fetch(`${API_URL}/api/preferences`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
