@@ -92,7 +92,8 @@ app.use('/api/about', aboutRouter);
 
 // Serve static frontend files in production
 if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(__dirname, '../../dist');
+  // Serve files built by Vite that we place into server/public at build time
+  const frontendPath = path.join(__dirname, '../public');
   logger.info(`Serving static files from: ${frontendPath}`);
   app.use(express.static(frontendPath));
   
