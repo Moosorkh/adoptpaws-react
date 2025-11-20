@@ -92,24 +92,21 @@ app.use('/api/about', aboutRouter);
 
 // Serve static frontend files in production
 if (process.env.NODE_ENV === 'production') {
-  // Serve files built by Vite that we place into server/public at build time
   const frontendPath = path.join(__dirname, '../public');
   logger.info(`Serving static files from: ${frontendPath}`);
   app.use(express.static(frontendPath));
   
-  // Catch-all route to serve index.html for SPA routing
-  app.get('*', (req, res) => {
+  // Catch-all route to serve index.html for SPA routing (MUST be last)
+  app.get('*', (req, res, next) => {
+    // Skip this handler for API routes - let 404 handler catch them
     if (req.path.startsWith('/api')) {
-      return res.status(404).json({ error: 'API endpoint not found' });
+      return next();
     }
     const indexPath = path.join(frontendPath, 'index.html');
     if (!fs.existsSync(indexPath)) {
       logger.error(`index.html not found at: ${indexPath}`);
-      return res
-        .status(500)
-        .send('Frontend build not found. Ensure root build produced dist/index.html');
+      return res.status(500).send('Frontend build not found');
     }
-    logger.info(`Serving index.html from: ${indexPath}`);
     res.sendFile(indexPath);
   });
 }
