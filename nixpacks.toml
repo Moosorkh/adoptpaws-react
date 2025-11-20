@@ -2,8 +2,10 @@
 cmds = [
   "npm install",
   "npm run build",
+  "ls -la dist/",
   "mkdir -p server/public",
-  "cp -r dist/* server/public/",
+  "rm -rf server/public/* || true",
+  "cp -r dist/* server/public/ && echo 'Frontend copied to server/public' && ls -la server/public/",
   "cd server && npm install && npm run build"
 ]
 
