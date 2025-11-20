@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import productsRouter from './routes/products.js';
 import generalRouter from './routes/general.js';
 import authRouter from './routes/auth.js';
@@ -74,6 +75,12 @@ if (process.env.NODE_ENV === 'production') {
       return res.status(404).json({ error: 'API endpoint not found' });
     }
     const indexPath = path.join(frontendPath, 'index.html');
+    if (!fs.existsSync(indexPath)) {
+      logger.error(`index.html not found at: ${indexPath}`);
+      return res
+        .status(500)
+        .send('Frontend build not found. Ensure root build produced dist/index.html');
+    }
     logger.info(`Serving index.html from: ${indexPath}`);
     res.sendFile(indexPath);
   });
