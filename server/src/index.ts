@@ -49,6 +49,33 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'AdoptPaws API is running', timestamp: new Date().toISOString() });
 });
 
+// Quick debug endpoint to inspect filesystem paths in production
+app.get('/health/fs', (req, res) => {
+  try {
+    const root = path.join(__dirname, '../../');
+    const serverDir = path.join(__dirname, '../');
+    const frontendPath = path.join(__dirname, '../../dist');
+    const indexPath = path.join(frontendPath, 'index.html');
+    res.json({
+      cwd: process.cwd(),
+      __dirname,
+      paths: {
+        root,
+        serverDir,
+        frontendPath,
+        indexPathExists: fs.existsSync(indexPath),
+      },
+      listings: {
+        root: fs.existsSync(root) ? fs.readdirSync(root) : 'missing',
+        serverDir: fs.existsSync(serverDir) ? fs.readdirSync(serverDir) : 'missing',
+        frontendPath: fs.existsSync(frontendPath) ? fs.readdirSync(frontendPath) : 'missing',
+      },
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e?.message || String(e) });
+  }
+});
+
 // Routes
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'AdoptPaws API is running' });
