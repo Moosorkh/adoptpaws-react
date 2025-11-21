@@ -56,8 +56,9 @@ app.use(
           "https://images.unsplash.com",
           "https://source.unsplash.com",
           "https://randomuser.me",
-          "https://musmentreat.com",
-          "https://*.musmentreat.com",
+          // Banner image host (typo fix: musentrepet)
+          "https://musentrepet.com",
+          "https://*.musentrepet.com",
           "https://*.shutterstock.com",
           "https://*.pixabay.com",
         ],
