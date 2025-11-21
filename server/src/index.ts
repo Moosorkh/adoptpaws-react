@@ -47,6 +47,7 @@ app.use(
         connectSrc: ["'self'"],
         fontSrc: ["'self'", "data:"],
         objectSrc: ["'none'"],
+        frameSrc: ["https://www.google.com"],
         imgSrc: [
           "'self'",
           "data:",
