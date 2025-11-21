@@ -61,6 +61,7 @@ app.use(
           "https://*.musentrepet.com",
           "https://*.shutterstock.com",
           "https://*.pixabay.com",
+          "https://muensterpet.com",
         ],
         upgradeInsecureRequests: [],
       },
