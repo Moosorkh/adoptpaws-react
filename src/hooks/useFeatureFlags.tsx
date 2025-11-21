@@ -38,7 +38,7 @@ export const useFeatureFlags = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/preferences`, {
+      const response = await fetch(`${API_URL}/preferences`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -81,7 +81,7 @@ export const useFeatureFlags = () => {
     if (isAuthenticated) {
       try {
         const token = localStorage.getItem('token');
-        await fetch(`${API_URL}/api/preferences`, {
+        await fetch(`${API_URL}/preferences`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,

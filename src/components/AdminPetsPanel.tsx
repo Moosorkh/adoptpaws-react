@@ -68,7 +68,7 @@ const AdminPetsPanel: React.FC<AdminPetsPanelProps> = ({ onEdit, onAdd }) => {
       if (filterStatus !== 'all') params.append('status', filterStatus);
       if (filterCategory !== 'all') params.append('category', filterCategory);
 
-      const response = await fetch(`${API_URL}/api/products?${params.toString()}`);
+      const response = await fetch(`${API_URL}/products?${params.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setPets(data);
@@ -92,7 +92,7 @@ const AdminPetsPanel: React.FC<AdminPetsPanelProps> = ({ onEdit, onAdd }) => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/products/${id}`, {
+      const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

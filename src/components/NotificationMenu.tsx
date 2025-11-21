@@ -44,7 +44,7 @@ const NotificationMenu: React.FC = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/notifications/unread`, {
+      const response = await fetch(`${API_URL}/notifications/unread`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -68,7 +68,7 @@ const NotificationMenu: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/notifications`, {
+      const response = await fetch(`${API_URL}/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -89,7 +89,7 @@ const NotificationMenu: React.FC = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/notifications/${id}/read`, {
+      const response = await fetch(`${API_URL}/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -111,7 +111,7 @@ const NotificationMenu: React.FC = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/notifications/mark-all-read`, {
+      const response = await fetch(`${API_URL}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

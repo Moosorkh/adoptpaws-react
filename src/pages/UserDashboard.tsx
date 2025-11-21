@@ -87,7 +87,7 @@ const UserDashboard: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/user/adoption-requests`, {
+      const response = await fetch(`${API_URL}/user/adoption-requests`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -113,7 +113,7 @@ const UserDashboard: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/api/user/favorites`, {
+      const response = await fetch(`${API_URL}/user/favorites`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -137,7 +137,7 @@ const UserDashboard: React.FC = () => {
     if (!token) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/user/favorites/${favoriteId}`, {
+      const response = await fetch(`${API_URL}/user/favorites/${favoriteId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

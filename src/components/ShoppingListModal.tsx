@@ -77,7 +77,7 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
       try {
         // Create an adoption request for each pet in the cart
         const adoptionPromises = cart.map(async (item) => {
-          const response = await fetch(`${API_URL}/api/user/adoption-requests`, {
+          const response = await fetch(`${API_URL}/user/adoption-requests`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -122,8 +122,8 @@ const PetFormDialog: React.FC<PetFormDialogProps> = ({ open, onClose, pet, onSuc
 
     try {
       const url = pet 
-        ? `${API_URL}/api/products/${pet.id}`
-        : `${API_URL}/api/products`;
+        ? `${API_URL}/products/${pet.id}`
+        : `${API_URL}/products`;
       
       const method = pet ? 'PUT' : 'POST';
 

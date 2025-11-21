@@ -70,7 +70,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     try {
       if (isFavorite && favoriteId) {
         // Remove from favorites
-        const response = await fetch(`${API_URL}/api/user/favorites/${favoriteId}`, {
+        const response = await fetch(`${API_URL}/user/favorites/${favoriteId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -86,7 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         }
       } else {
         // Add to favorites
-        const response = await fetch(`${API_URL}/api/user/favorites`, {
+        const response = await fetch(`${API_URL}/user/favorites`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

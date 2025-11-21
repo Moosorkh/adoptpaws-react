@@ -59,7 +59,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
     
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/preferences`, {
+      const response = await fetch(`${API_URL}/preferences`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -89,7 +89,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_URL}/api/preferences`, {
+      const response = await fetch(`${API_URL}/preferences`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
