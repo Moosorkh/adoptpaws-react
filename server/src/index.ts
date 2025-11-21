@@ -35,7 +35,37 @@ const limiter = rateLimit({
 });
 
 // Middleware
-app.use(helmet());
+// Configure Helmet with a CSP that allows trusted image sources used by the app
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "blob:",
+          // Common external hosts used by the app for images/avatars
+          "https://i.imgur.com",
+          "https://images.unsplash.com",
+          "https://source.unsplash.com",
+          "https://randomuser.me",
+          "https://musmentreat.com",
+          "https://*.musmentreat.com",
+          "https://*.shutterstock.com",
+          "https://*.pixabay.com",
+        ],
+        upgradeInsecureRequests: [],
+      },
+    },
+  })
+);
 app.use(limiter);
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
