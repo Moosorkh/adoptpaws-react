@@ -165,10 +165,10 @@ The application can be deployed to:
 
 See the deployment guide for environment variable configuration.
 
-### Cloudflare Pages (Frontend + API Proxy)
+### Cloudflare Pages + D1 (Full Cloudflare Stack)
 
-This repository includes a Pages Function proxy at `functions/api/[[path]].ts`.
-It forwards all `/api/*` requests from your Pages domain to your backend origin.
+This repository includes a native Cloudflare Pages Function API at `functions/api/[[path]].ts`.
+The frontend calls `/api/*` on the same domain, and the API reads/writes Cloudflare D1.
 
 Configure Cloudflare Pages build settings:
 
@@ -179,13 +179,24 @@ Configure Cloudflare Pages build settings:
 Set Pages environment variables:
 
 - `VITE_API_URL=/api`
-- `BACKEND_ORIGIN=https://your-backend-domain` (for example `https://your-api.example.com/api`)
+- `JWT_SECRET=<your-secure-random-secret>`
+
+Bind D1 to Pages Functions:
+
+- Binding name: `DB`
+- Database: your D1 database
+
+Initialize D1 schema (one-time):
+
+- Use `cloudflare/d1/schema.sql` as your schema + seed file.
+- Run it with Wrangler or paste it into the D1 SQL console.
 
 Notes:
 
 - `VITE_API_URL` is used by the frontend.
-- `BACKEND_ORIGIN` is used only by the Cloudflare Pages Function proxy.
-- If `BACKEND_ORIGIN` already includes `/api`, keep `VITE_API_URL=/api` as-is.
+- `JWT_SECRET` is used to sign and verify auth tokens in the Pages Function.
+- A default admin user is auto-created by the API with email `admin@adoptpaws.com` and password `admin123`.
+   Change this immediately after first login.
 
 ## Environment Variables
 
