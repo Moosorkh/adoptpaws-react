@@ -1,6 +1,7 @@
 import { Product } from '../types';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = getApiBaseUrl();
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 
 class APIError extends Error {

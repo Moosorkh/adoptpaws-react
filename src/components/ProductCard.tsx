@@ -15,6 +15,7 @@ import { Favorite, FavoriteBorder } from '@mui/icons-material';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface ProductCardProps {
   product: Product;
@@ -35,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [isFavorite, setIsFavorite] = useState(!!initialFavorite);
   const [favoriteId, setFavoriteId] = useState<string | null>(initialFavorite?.id || null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
 
   // Update favorite state when initialFavorite prop changes
   useEffect(() => {

@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import { useThemeMode } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -46,7 +47,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
   const [error, setError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
 
   useEffect(() => {
     if (open && isAuthenticated && token) {

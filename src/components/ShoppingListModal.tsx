@@ -31,6 +31,7 @@ import {
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import CartItem from '../components/CartItem';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface ShoppingListModalProps {
   open: boolean;
@@ -50,7 +51,7 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
   const [confirmClear, setConfirmClear] = useState(false);
   const [error, setError] = useState('');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
 
   const steps = ['Review Cart', 'Adoption Details', 'Confirmation'];
 

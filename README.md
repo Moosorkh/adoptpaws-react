@@ -165,6 +165,28 @@ The application can be deployed to:
 
 See the deployment guide for environment variable configuration.
 
+### Cloudflare Pages (Frontend + API Proxy)
+
+This repository includes a Pages Function proxy at `functions/api/[[path]].ts`.
+It forwards all `/api/*` requests from your Pages domain to your backend origin.
+
+Configure Cloudflare Pages build settings:
+
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Root directory: *(empty)*
+
+Set Pages environment variables:
+
+- `VITE_API_URL=/api`
+- `BACKEND_ORIGIN=https://your-backend-domain` (for example `https://your-api.example.com/api`)
+
+Notes:
+
+- `VITE_API_URL` is used by the frontend.
+- `BACKEND_ORIGIN` is used only by the Cloudflare Pages Function proxy.
+- If `BACKEND_ORIGIN` already includes `/api`, keep `VITE_API_URL=/api` as-is.
+
 ## Environment Variables
 
 ### Frontend (.env)

@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface Notification {
   id: string;
@@ -30,7 +31,7 @@ const NotificationMenu: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
 
   useEffect(() => {
     if (isAuthenticated) {

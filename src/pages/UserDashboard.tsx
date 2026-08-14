@@ -34,6 +34,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import AdminPetsPanel from '../components/AdminPetsPanel';
 import PetFormDialog from '../components/PetFormDialog';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface AdoptionRequest {
   id: string;
@@ -69,7 +70,7 @@ const UserDashboard: React.FC = () => {
     pet: null
   });
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {

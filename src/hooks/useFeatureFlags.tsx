@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface UserPreferences {
   email_notifications: boolean;
@@ -21,7 +22,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   dark_mode_enabled: true, // Dark mode available by default
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = getApiBaseUrl();
 
 export const useFeatureFlags = () => {
   const { isAuthenticated } = useAuth();

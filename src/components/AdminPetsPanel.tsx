@@ -29,6 +29,7 @@ import {
   Refresh
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface Pet {
   id: string;
@@ -58,7 +59,7 @@ const AdminPetsPanel: React.FC<AdminPetsPanelProps> = ({ onEdit, onAdd }) => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
 
   const fetchPets = async () => {
     setLoading(true);

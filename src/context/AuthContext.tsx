@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface User {
   id: string;
@@ -36,9 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
-  // Use a single source of truth for the API base URL. VITE_API_URL should be the bare server URL
-  // (e.g. http://localhost:3001), and routes append their own `/api/...` paths.
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
 
   useEffect(() => {
     // Check if user is logged in on mount

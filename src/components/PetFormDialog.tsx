@@ -15,6 +15,7 @@ import {
   Alert
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface Pet {
   id?: string;
@@ -61,7 +62,7 @@ const PetFormDialog: React.FC<PetFormDialogProps> = ({ open, onClose, pet, onSuc
   });
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = getApiBaseUrl();
 
   useEffect(() => {
     if (open) {

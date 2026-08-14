@@ -47,6 +47,7 @@ import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import AuthDialog from '../components/AuthDialog';
+import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface ProductsSectionProps {
   onOpenShoppingList: () => void;
@@ -59,6 +60,7 @@ interface Category {
 }
 
 const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList }) => {
+  const API_URL = getApiBaseUrl();
   const { cart, clearCart, totalItems, totalPrice } = useCart();
   const { isAuthenticated, token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -104,7 +106,6 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const response = await fetch(`${API_URL}/user/favorites`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -167,7 +168,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
     
     for (const item of cart) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/adoptions`, {
+        const response = await fetch(`${API_URL}/adoptions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
