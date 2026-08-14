@@ -48,11 +48,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* Offline status notification */}
+      {/* Offline status notification.
+          Anchored to the bottom and kept outside <main> (which opens a
+          `zIndex: 1` stacking context) so the hero wordmark can't cover it. */}
       <Snackbar
         open={!isOnline}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        sx={{ top: { xs: 56, sm: 64 } }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ bottom: { xs: 160, sm: 24 } }}
       >
         <Alert 
           severity="warning" 
@@ -72,7 +74,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           You're offline. Some features may be unavailable.
         </Alert>
       </Snackbar>
-      
+
+      {/* Welcome message — stacked above the offline alert when both are open */}
+      <Snackbar
+        open={showWelcome}
+        autoHideDuration={4000}
+        onClose={() => setShowWelcome(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ bottom: { xs: isOnline ? 160 : 232, sm: isOnline ? 24 : 96 } }}
+      >
+        <Alert
+          icon={<Pets />}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          Welcome to AdoptPaws! Find your perfect pet companion today.
+        </Alert>
+      </Snackbar>
+
       {/* Main Content Wrapper */}
       <Fade in={true} timeout={300}>
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -100,23 +119,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 }
               }}
             >
-              {/* Welcome message */}
-              <Snackbar
-                open={showWelcome}
-                autoHideDuration={4000}
-                onClose={() => setShowWelcome(false)}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                sx={{ top: { xs: !isOnline ? 116 : 56, sm: !isOnline ? 124 : 64 } }}
-              >
-                <Alert 
-                  icon={<Pets />}
-                  severity="success"
-                  sx={{ width: '100%' }}
-                >
-                  Welcome to AdoptPaws! Find your perfect pet companion today.
-                </Alert>
-              </Snackbar>
-              
               {/* Main content */}
               {children}
             </Box>

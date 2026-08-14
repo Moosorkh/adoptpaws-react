@@ -21,12 +21,10 @@ import {
   Settings,
   Notifications,
   Email,
-  DarkMode,
   Language,
   Sms,
   Campaign
 } from '@mui/icons-material';
-import { useThemeMode } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
@@ -36,13 +34,11 @@ interface SettingsDialogProps {
 }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
-  const { darkMode, toggleDarkMode } = useThemeMode();
   const { token, isAuthenticated } = useAuth();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [marketingEmails, setMarketingEmails] = useState(false);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(true); // Controls feature availability
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -72,7 +68,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
         setPushNotifications(data.push_notifications ?? true);
         setSmsNotifications(data.sms_notifications ?? false);
         setMarketingEmails(data.marketing_emails ?? false);
-        setDarkModeEnabled(data.dark_mode_enabled ?? true);
       }
     } catch (err) {
       console.error('Failed to fetch preferences:', err);
@@ -100,8 +95,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
           email_notifications: emailNotifications,
           push_notifications: pushNotifications,
           sms_notifications: smsNotifications,
-          marketing_emails: marketingEmails,
-          dark_mode_enabled: darkModeEnabled
+          marketing_emails: marketingEmails
         })
       });
 
@@ -226,41 +220,6 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose }) => {
                   <Switch
                     checked={marketingEmails}
                     onChange={(e) => setMarketingEmails(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label=""
-              />
-            </ListItem>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* Appearance Section */}
-            <Typography variant="subtitle2" color="text.secondary" sx={{ px: 2, py: 1 }}>
-              Appearance
-            </Typography>
-            <ListItem>
-              <ListItemIcon>
-                <DarkMode sx={{ color: '#96BBBB' }} />
-              </ListItemIcon>
-              <ListItemText
-                primary="Dark Mode"
-                secondary="Enable dark mode feature in profile menu"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={darkModeEnabled}
-                    onChange={(e) => {
-                      const enabled = e.target.checked;
-                      console.log('Dark mode toggle changed to:', enabled);
-                      setDarkModeEnabled(enabled);
-                      // If disabling, force light mode
-                      if (!enabled && darkMode) {
-                        console.log('Disabling dark mode, forcing light mode');
-                        toggleDarkMode();
-                      }
-                    }}
                     color="primary"
                   />
                 }

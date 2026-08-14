@@ -39,7 +39,7 @@ class ErrorBoundary extends Component<Props, State> {
             justifyContent: 'center',
             alignItems: 'center',
             minHeight: '100vh',
-            bgcolor: '#f5f5f5',
+            bgcolor: '#f8f8f8',
             p: 3,
           }}
         >
@@ -49,7 +49,7 @@ class ErrorBoundary extends Component<Props, State> {
               p: 4,
               maxWidth: 500,
               textAlign: 'center',
-              borderRadius: 3,
+              borderRadius: 0,
             }}
           >
             <ErrorOutline sx={{ fontSize: 64, color: '#d32f2f', mb: 2 }} />
@@ -66,7 +66,7 @@ class ErrorBoundary extends Component<Props, State> {
                   display: 'block',
                   mb: 2,
                   p: 2,
-                  bgcolor: '#f5f5f5',
+                  bgcolor: '#f8f8f8',
                   borderRadius: 1,
                   fontFamily: 'monospace',
                   textAlign: 'left',

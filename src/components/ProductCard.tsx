@@ -1,17 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  Typography, 
-  Button, 
+import {
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Button,
   Box,
-  Grow,
   Divider,
   IconButton
 } from '@mui/material';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -22,13 +21,15 @@ interface ProductCardProps {
   onAuthRequired?: () => void;
   initialFavorite?: { id: string, product_id: string } | null;
   onFavoriteChange?: () => void;
+  index?: number;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ 
-  product, 
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
   onAuthRequired,
   initialFavorite = null,
-  onFavoriteChange
+  onFavoriteChange,
+  index = 0
 }) => {
   const { addToCart } = useCart();
   const { isAuthenticated, token } = useAuth();
@@ -58,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event bubbling
-    
+
     if (!isAuthenticated) {
       if (onAuthRequired) {
         onAuthRequired();
@@ -112,34 +113,80 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <Grow in={true} timeout={700} style={{ transformOrigin: '0 0 0' }}>
-      <Card 
-        elevation={isHovered ? 8 : 1}
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.5, delay: (index % 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      style={{ flex: '1 1 calc(33% - 20px)', minWidth: 280, maxWidth: 320 }}
+    >
+      <Card
+        elevation={0}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        sx={{ 
-          maxWidth: 320, 
-          flex: '1 1 calc(33% - 20px)', 
-          minWidth: 280,
+        sx={{
           transition: 'all 0.3s ease',
-          transform: isHovered ? 'translateY(-8px)' : 'none',
+          transform: isHovered ? 'translateY(-6px)' : 'none',
           overflow: 'hidden',
-          borderRadius: 2,
+          borderRadius: 0,
+          border: '1px solid',
+          borderColor: isHovered ? 'text.primary' : 'divider',
+          bgcolor: 'background.paper',
           position: 'relative'
         }}
       >
-        <CardMedia
-          component="img"
-          height="220"
-          image={product.imageUrl}
-          alt={product.name}
-          sx={{ 
-            transition: 'transform 0.5s ease',
-            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-            position: 'relative'
-          }}
-        />
-        
+        {/* Image sits in a fixed mask so it can zoom without resizing the card */}
+        <Box sx={{ position: 'relative', overflow: 'hidden', height: 220 }}>
+          <CardMedia
+            component="img"
+            height="220"
+            image={product.imageUrl}
+            alt={product.name}
+            sx={{
+              height: 220,
+              transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease',
+              transform: isHovered ? 'scale(1.08)' : 'scale(1.02)',
+              filter: isHovered ? 'grayscale(0%)' : 'grayscale(20%)',
+            }}
+          />
+
+          {/* Breed / age tags slide up out of the bottom edge on hover */}
+          <Box
+            sx={{
+              position: 'absolute',
+              right: 8,
+              bottom: 8,
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+              gap: 0.5,
+              pointerEvents: 'none',
+            }}
+          >
+            {[product.breed, product.age].filter(Boolean).map((tag, i) => (
+              <Box
+                key={`${tag}-${i}`}
+                component="span"
+                sx={{
+                  bgcolor: 'rgba(62, 78, 80, 0.8)',
+                  color: '#ffffff',
+                  fontSize: '0.6rem',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  px: 1,
+                  py: 0.4,
+                  transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease',
+                  transitionDelay: `${i * 60}ms`,
+                  transform: isHovered ? 'translateY(0)' : 'translateY(140%)',
+                  opacity: isHovered ? 1 : 0,
+                }}
+              >
+                {tag}
+              </Box>
+            ))}
+          </Box>
+        </Box>
+
         {/* Favorite Button Overlay */}
         <IconButton
           onClick={(e) => toggleFavorite(e)}
@@ -147,9 +194,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
             position: 'absolute',
             top: 8,
             right: 8,
-            bgcolor: 'rgba(255, 255, 255, 0.9)',
+            bgcolor: 'rgba(62, 78, 80, 0.75)',
+            borderRadius: 0,
             '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 1)',
+              bgcolor: 'rgba(62, 78, 80, 0.92)',
             },
             zIndex: 1
           }}
@@ -157,72 +205,76 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {isFavorite ? (
             <Favorite sx={{ color: '#ff1744' }} />
           ) : (
-            <FavoriteBorder />
+            <FavoriteBorder sx={{ color: '#ffffff' }} />
           )}
         </IconButton>
-        
+
         <CardContent sx={{ p: 3 }}>
-          <Typography 
-            gutterBottom 
-            variant="h5" 
+          <Typography
+            gutterBottom
+            variant="h5"
             component="h3"
-            sx={{ 
-              fontWeight: 'bold',
-              color: '#3E4E50'
+            sx={{
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              color: 'text.primary',
+              letterSpacing: '0.01em'
             }}
           >
             {product.name}
           </Typography>
           <Divider sx={{ my: 1.5 }} />
-          <Typography 
-            variant="body2" 
+          <Typography
+            variant="body2"
             color="text.secondary"
-            sx={{ 
-              height: 80, 
+            sx={{
+              height: 80,
               overflow: 'hidden',
               mb: 2
             }}
           >
             {product.description}
           </Typography>
-          
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
             mt: 3
           }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 'bold',
-                color: '#3E4E50' 
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: 'text.primary'
               }}
             >
               ${product.price.toFixed(2)}
             </Typography>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="outlined"
               size="large"
-              sx={{ 
-                bgcolor: '#3E4E50',
+              sx={{
+                borderRadius: 0,
+                borderColor: 'text.primary',
+                color: 'text.primary',
+                fontWeight: 500,
+                letterSpacing: '0.05em',
+                px: 3,
                 '&:hover': {
-                  bgcolor: '#93b7bb',
-                  color: 'black',
+                  bgcolor: 'text.primary',
+                  color: 'background.default',
+                  borderColor: 'text.primary',
                 },
-                borderRadius: 2,
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                fontWeight: 'medium',
-                px: 3
               }}
               onClick={handleAdopt}
             >
-              Adopt
+              [ Adopt ]
             </Button>
           </Box>
         </CardContent>
       </Card>
-    </Grow>
+    </motion.div>
   );
 };
 

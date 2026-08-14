@@ -1,7 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 import { ThemeProvider as MuiThemeProvider, createTheme, Theme } from '@mui/material';
 
+// Original AdoptPaws palette, kept as a single theme.
+export const colors = {
+  background: '#EAE5D7',
+  surface: '#ffffff',
+  border: 'rgba(62, 78, 80, 0.18)',
+  textPrimary: '#333333',
+  textSecondary: '#666666',
+  accent: '#96BBBB',
+  onAccent: '#ffffff',
+};
+
 interface ThemeContextType {
+  // Kept for backward compatibility with existing call sites; the app now
+  // has a single stark theme, so this is always false / a no-op.
   darkMode: boolean;
   toggleDarkMode: () => void;
 }
@@ -17,34 +30,11 @@ export const useThemeMode = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved === 'true';
-  });
-
-  useEffect(() => {
-    const handleDarkModeChange = (e: CustomEvent<boolean>) => {
-      setDarkMode(e.detail);
-    };
-
-    window.addEventListener('darkModeChange' as any, handleDarkModeChange);
-    return () => window.removeEventListener('darkModeChange' as any, handleDarkModeChange);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', String(darkMode));
-  }, [darkMode]);
-
-  const toggleDarkMode = () => {
-    setDarkMode(prev => !prev);
-    window.dispatchEvent(new CustomEvent('darkModeChange', { detail: !darkMode }));
-  };
-
   const theme = useMemo<Theme>(() => createTheme({
     palette: {
-      mode: darkMode ? 'dark' : 'light',
+      mode: 'light',
       primary: {
-        main: '#96BBBB',
+        main: colors.accent,
         light: '#b7d4d4',
         dark: '#7a9b9b',
         contrastText: '#ffffff',
@@ -55,12 +45,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         dark: '#2a3436',
         contrastText: '#ffffff',
       },
-      background: darkMode ? {
-        default: '#121212',
-        paper: '#1e1e1e',
-      } : {
-        default: '#EAE5D7',
-        paper: '#ffffff',
+      background: {
+        default: colors.background,
+        paper: colors.surface,
       },
       error: {
         main: '#f44336',
@@ -74,67 +61,72 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       success: {
         main: '#4caf50',
       },
-      text: darkMode ? {
-        primary: '#ffffff',
-        secondary: '#b0b0b0',
-      } : {
-        primary: '#333333',
-        secondary: '#666666',
+      text: {
+        primary: colors.textPrimary,
+        secondary: colors.textSecondary,
       },
+      divider: colors.border,
     },
     typography: {
-      fontFamily: "'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif",
-      h1: { fontWeight: 700 },
-      h2: { fontWeight: 700 },
-      h3: { fontWeight: 600 },
+      fontFamily: "'Space Grotesk', sans-serif",
+      h1: { fontWeight: 700, textTransform: 'uppercase', letterSpacing: '-0.02em' },
+      h2: { fontWeight: 700, textTransform: 'uppercase', letterSpacing: '-0.02em' },
+      h3: { fontWeight: 600, letterSpacing: '-0.01em' },
       h4: { fontWeight: 600 },
       h5: { fontWeight: 500 },
       h6: { fontWeight: 500 },
       button: {
-        textTransform: 'none',
+        textTransform: 'uppercase',
         fontWeight: 500,
+        letterSpacing: '0.05em',
       },
     },
     shape: {
-      borderRadius: 8,
+      borderRadius: 0,
     },
     components: {
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: '10px',
-            padding: '8px 22px',
-            boxShadow: darkMode ? '0 2px 5px rgba(0, 0, 0, 0.3)' : '0 2px 5px rgba(0, 0, 0, 0.1)',
-            transition: 'all 0.3s ease',
+            borderRadius: 0,
+            padding: '10px 24px',
+            boxShadow: 'none',
+            transition: 'all 0.25s ease',
           },
           contained: {
             '&:hover': {
-              boxShadow: darkMode ? '0 4px 10px rgba(0, 0, 0, 0.5)' : '0 4px 10px rgba(0, 0, 0, 0.2)',
-              transform: 'translateY(-2px)',
+              boxShadow: 'none',
             },
+          },
+          outlined: {
+            borderColor: colors.border,
           },
         },
       },
       MuiCard: {
         styleOverrides: {
           root: {
-            boxShadow: darkMode ? '0 4px 10px rgba(0, 0, 0, 0.4)' : '0 4px 10px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px',
+            boxShadow: 'none',
+            borderRadius: 0,
+            border: `1px solid ${colors.border}`,
+            backgroundColor: colors.surface,
           },
         },
       },
       MuiPaper: {
         styleOverrides: {
           root: {
-            borderRadius: '12px',
+            borderRadius: 0,
             backgroundImage: 'none',
+            backgroundColor: colors.surface,
           },
         },
       },
       MuiAppBar: {
         styleOverrides: {
           root: {
-            boxShadow: darkMode ? '0 2px 10px rgba(0, 0, 0, 0.5)' : '0 2px 10px rgba(0, 0, 0, 0.1)',
+            boxShadow: 'none',
+            backgroundColor: colors.background,
           },
         },
       },
@@ -142,20 +134,28 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         styleOverrides: {
           root: {
             '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
+              borderRadius: 0,
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#96BBBB',
+                borderColor: colors.accent,
               },
             },
           },
         },
       },
+      MuiDivider: {
+        styleOverrides: {
+          root: {
+            borderColor: colors.border,
+          },
+        },
+      },
     },
-  }), [darkMode]);
+  }), []);
 
+  // Fixed single-theme app: no dark mode, toggle is a no-op.
   const value: ThemeContextType = {
-    darkMode,
-    toggleDarkMode,
+    darkMode: false,
+    toggleDarkMode: () => {},
   };
 
   return (

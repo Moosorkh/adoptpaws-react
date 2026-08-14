@@ -154,7 +154,7 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
             sx={{ 
               mt: 2, 
               pt: 2, 
-              borderTop: '1px dashed #eee',
+              borderTop: '1px dashed #e0e0e0',
               borderRadius: 0
             }}
           >
