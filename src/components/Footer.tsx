@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Container, Grid, Link, IconButton, Divider } from '@mui/material';
-import { Facebook, Twitter, Instagram, Pets, Email, Phone, LocationOn } from '@mui/icons-material';
+import { Facebook, Twitter, Instagram, Email, Phone, LocationOn } from '@mui/icons-material';
 import { scrollToSection, scrollToTop } from '../utils/helpers';
 
 const Footer: React.FC = () => {
@@ -24,118 +24,129 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <Box 
-      component="footer" 
-      sx={{ 
+    <Box
+      component="footer"
+      sx={{
         mt: 'auto',
-        bgcolor: '#96BBBB',
-        color: 'white',
-        pt: 6,
+        bgcolor: 'background.default',
+        color: 'text.primary',
+        borderTop: '1px solid',
+        borderColor: 'divider',
+        pt: 8,
         pb: 3
       }}
     >
       <Container maxWidth="lg">
+        <Box
+          onClick={handleLogoClick}
+          sx={{ cursor: 'pointer', mb: 6 }}
+        >
+          <Typography
+            sx={{
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              fontSize: { xs: '2.75rem', sm: '4rem', md: '5.5rem' },
+            }}
+          >
+            AdoptPaws
+          </Typography>
+        </Box>
+
         <Grid container spacing={4}>
           <Grid item xs={12} sm={4}>
-            <Box 
-              onClick={handleLogoClick}
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                mb: 2,
-                cursor: 'pointer'
-              }}
-            >
-              <Pets sx={{ mr: 1, color: '#3E4E50', fontSize: 28 }} />
-              <Typography variant="h5" sx={{ color: '#3E4E50', fontWeight: 'bold' }}>
-                AdoptPaws
-              </Typography>
-            </Box>
-            <Typography variant="body2" sx={{ mb: 2, color: '#ffffff' }}>
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
               Open your heart and home to a new friend. Our mission is to find loving homes for pets in need.
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton size="small" sx={{ color: '#3E4E50', bgcolor: 'rgba(255, 255, 255, 0.3)' }}>
+              <IconButton size="small" sx={{ color: 'text.primary', border: '1px solid', borderColor: 'divider', borderRadius: 0 }}>
                 <Facebook fontSize="small" />
               </IconButton>
-              <IconButton size="small" sx={{ color: '#3E4E50', bgcolor: 'rgba(255, 255, 255, 0.3)' }}>
+              <IconButton size="small" sx={{ color: 'text.primary', border: '1px solid', borderColor: 'divider', borderRadius: 0 }}>
                 <Twitter fontSize="small" />
               </IconButton>
-              <IconButton size="small" sx={{ color: '#3E4E50', bgcolor: 'rgba(255, 255, 255, 0.3)' }}>
+              <IconButton size="small" sx={{ color: 'text.primary', border: '1px solid', borderColor: 'divider', borderRadius: 0 }}>
                 <Instagram fontSize="small" />
               </IconButton>
             </Box>
           </Grid>
-          
+
           <Grid item xs={12} sm={4}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#3E4E50' }}>
+            <Typography variant="overline" sx={{ mb: 2, display: 'block', color: 'text.secondary', letterSpacing: '0.1em' }}>
               Quick Links
             </Typography>
             <Box component="nav">
-              <Link 
-                component="button" 
-                underline="none" 
+              <Link
+                component="button"
+                underline="none"
                 onClick={() => handleNavigation('about-section')}
-                sx={{ 
-                  display: 'block', 
-                  mb: 1, 
-                  color: 'white',
-                  '&:hover': { color: '#3E4E50' }
+                sx={{
+                  display: 'block',
+                  mb: 1,
+                  color: 'text.primary',
+                  fontWeight: 500,
+                  letterSpacing: '0.03em',
+                  '&:hover': { color: 'primary.main' }
                 }}
               >
-                About Us
+                [ About Us ]
               </Link>
-              <Link 
-                component="button" 
-                underline="none" 
+              <Link
+                component="button"
+                underline="none"
                 onClick={() => handleNavigation('products-section')}
-                sx={{ 
-                  display: 'block', 
-                  mb: 1, 
-                  color: 'white',
-                  '&:hover': { color: '#3E4E50' }
+                sx={{
+                  display: 'block',
+                  mb: 1,
+                  color: 'text.primary',
+                  fontWeight: 500,
+                  letterSpacing: '0.03em',
+                  '&:hover': { color: 'primary.main' }
                 }}
               >
-                Our Pets
+                [ Our Pets ]
               </Link>
-              <Link 
-                component="button" 
-                underline="none" 
+              <Link
+                component="button"
+                underline="none"
                 onClick={() => handleNavigation('contact-section')}
-                sx={{ 
-                  display: 'block', 
-                  mb: 1, 
-                  color: 'white',
-                  '&:hover': { color: '#3E4E50' }
+                sx={{
+                  display: 'block',
+                  mb: 1,
+                  color: 'text.primary',
+                  fontWeight: 500,
+                  letterSpacing: '0.03em',
+                  '&:hover': { color: 'primary.main' }
                 }}
               >
-                Contact Us
+                [ Contact Us ]
               </Link>
             </Box>
           </Grid>
-          
+
           <Grid item xs={12} sm={4}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#3E4E50' }}>
+            <Typography variant="overline" sx={{ mb: 2, display: 'block', color: 'text.secondary', letterSpacing: '0.1em' }}>
               Contact Info
             </Typography>
             <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-              <LocationOn sx={{ mr: 1, fontSize: 18, color: '#3E4E50' }} />
+              <LocationOn sx={{ mr: 1, fontSize: 18, color: 'text.secondary' }} />
               <Typography variant="body2">123 Pet Lane, Pawsville, CA 90210</Typography>
             </Box>
             <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-              <Phone sx={{ mr: 1, fontSize: 18, color: '#3E4E50' }} />
+              <Phone sx={{ mr: 1, fontSize: 18, color: 'text.secondary' }} />
               <Typography variant="body2">(555) 123-4567</Typography>
             </Box>
             <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-              <Email sx={{ mr: 1, fontSize: 18, color: '#3E4E50' }} />
+              <Email sx={{ mr: 1, fontSize: 18, color: 'text.secondary' }} />
               <Typography variant="body2">info@adoptpaws.com</Typography>
             </Box>
           </Grid>
         </Grid>
-        
-        <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.2)' }} />
-        
-        <Typography variant="body2" sx={{ textAlign: 'center', color: '#FFFFFF' }}>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary' }}>
           &copy; {new Date().getFullYear()} AdoptPaws. All rights reserved. Designed with care and love.
         </Typography>
       </Container>

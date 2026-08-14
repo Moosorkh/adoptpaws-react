@@ -56,6 +56,8 @@ export const api = {
       description: item.description,
       imageUrl: item.image_url,
       category: item.category,
+      breed: item.breed,
+      age: item.age,
     }));
   },
 
@@ -69,6 +71,8 @@ export const api = {
       description: item.description,
       imageUrl: item.image_url,
       category: item.category,
+      breed: item.breed,
+      age: item.age,
     };
   },
 

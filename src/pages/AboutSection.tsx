@@ -29,6 +29,8 @@ import {
   ExpandLess 
 } from '@mui/icons-material';
 import { api } from '../services/api';
+import RevealText from '../components/motion/RevealText';
+import MaskedWords from '../components/motion/MaskedWords';
 
 
 const AboutSection: React.FC = () => {
@@ -90,48 +92,38 @@ const AboutSection: React.FC = () => {
           <Box>
             {/* Header Section */}
             <Box sx={{ mb: 6, textAlign: 'center' }}>
-              <Typography 
-                variant="h4" 
-                component="h2" 
-                sx={{ 
+              <Typography
+                variant="h2"
+                component="h2"
+                sx={{
                   mb: 2,
-                  color: '#3E4E50',
-                  fontWeight: 'bold',
-                  display: 'inline-block',
-                  position: 'relative',
-                  pb: 2,
-                  '&:after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: '15%',
-                    right: '15%',
-                    height: '3px',
-                    background: 'linear-gradient(to right, transparent, #96BBBB, transparent)'
-                  }
+                  fontWeight: 700,
+                  fontSize: { xs: '2rem', md: '3rem' },
                 }}
               >
-                Our Story
+                <MaskedWords lines={['[ Our Story ]']} justify="center" />
               </Typography>
-              <Typography 
-                variant="subtitle1" 
-                color="text.secondary"
-                sx={{ 
-                  maxWidth: 800, 
-                  mx: 'auto',
-                  fontSize: '1.1rem',
-                  lineHeight: 1.6
-                }}
-              >
-                Helping pets find their forever homes since 2012
-              </Typography>
+              <RevealText delay={0.2}>
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  sx={{
+                    maxWidth: 800,
+                    mx: 'auto',
+                    fontSize: '1.1rem',
+                    lineHeight: 1.6
+                  }}
+                >
+                  Helping pets find their forever homes since 2012
+                </Typography>
+              </RevealText>
             </Box>
             
             {/* Main Content Section */}
             <Paper 
               elevation={3} 
               sx={{ 
-                borderRadius: 4, 
+                borderRadius: 0, 
                 overflow: 'hidden',
                 mb: 8,
                 backgroundImage: 'linear-gradient(to bottom right, rgba(150, 187, 187, 0.1), transparent)',
@@ -299,7 +291,7 @@ const AboutSection: React.FC = () => {
                             elevation={2}
                             sx={{ 
                               height: '100%',
-                              borderRadius: 3,
+                              borderRadius: 0,
                               transition: 'all 0.3s ease',
                               '&:hover': {
                                 transform: 'translateY(-8px)',
@@ -352,7 +344,7 @@ const AboutSection: React.FC = () => {
                       <Grid item xs={12} sm={6} md={4} key={index}>
                         <Fade in={true} timeout={500 + index * 300}>
                           <Card sx={{ 
-                            borderRadius: 3, 
+                            borderRadius: 0, 
                             height: '100%',
                             '&:hover': {
                               boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
@@ -470,7 +462,7 @@ const AboutSection: React.FC = () => {
               elevation={2}
               sx={{
                 p: 5,
-                borderRadius: 4,
+                borderRadius: 0,
                 bgcolor: '#96BBBB',
                 color: 'white',
                 textAlign: 'center',

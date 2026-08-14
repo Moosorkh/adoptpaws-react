@@ -28,6 +28,8 @@ import {
 } from '@mui/icons-material';
 import ContactForm from '../components/ContactForm';
 import { api } from '../services/api';
+import RevealText from '../components/motion/RevealText';
+import MaskedWords from '../components/motion/MaskedWords';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -101,44 +103,34 @@ const ContactSection: React.FC = () => {
     <Box id="contact-section" sx={{ mb: 8, mt: 4 }}>
       <Fade in={true} timeout={800}>
         <Box>
-          <Typography 
-            variant="h4" 
-            component="h2" 
-            sx={{ 
-              mb: 4, 
-              textAlign: 'center',
-              color: '#3E4E50',
-              fontWeight: 'bold',
-              position: 'relative',
-              pb: 2,
-              '&:after': {
-                content: '""',
-                position: 'absolute',
-                bottom: 0,
-                left: '50%',
-                width: '80px',
-                height: '3px',
-                backgroundColor: '#96BBBB',
-                transform: 'translateX(-50%)'
-              }
+          <Typography
+            variant="h2"
+            component="h2"
+            sx={{
+              mb: 3,
+              fontWeight: 700,
+              fontSize: { xs: '2rem', md: '3rem' },
             }}
           >
-            Contact Us
+            <MaskedWords lines={['[ Contact Us ]']} justify="center" />
           </Typography>
-          
-          <Typography 
-            variant="h6" 
-            component="h3" 
-            sx={{ 
-              mb: 3, 
-              textAlign: 'center', 
-              color: '#3E4E50',
-              maxWidth: 700,
-              mx: 'auto'
-            }}
-          >
-            Have any questions about our furry friends? Want to know more about the adoption process? We're here to help!
-          </Typography>
+
+          <RevealText delay={0.2}>
+            <Typography
+              variant="h6"
+              component="h3"
+              sx={{
+                mb: 3,
+                textAlign: 'center',
+                color: 'text.secondary',
+                fontWeight: 400,
+                maxWidth: 700,
+                mx: 'auto'
+              }}
+            >
+              Have any questions about our furry friends? Want to know more about the adoption process? We're here to help!
+            </Typography>
+          </RevealText>
           
           {/* Contact Options Heading */}
           <Box sx={{ 
@@ -260,7 +252,7 @@ const ContactSection: React.FC = () => {
                 }
                 sx={{ 
                   borderRadius: '8px 8px 0 0',
-                  border: activeTab === 0 ? '1px solid rgba(0,0,0,0.1)' : 'none',
+                  border: activeTab === 0 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
                   borderBottom: 'none',
                   bgcolor: activeTab === 0 ? 'rgba(150, 187, 187, 0.1)' : 'transparent',
                 }}
@@ -304,7 +296,7 @@ const ContactSection: React.FC = () => {
                 }
                 sx={{ 
                   borderRadius: '8px 8px 0 0',
-                  border: activeTab === 1 ? '1px solid rgba(0,0,0,0.1)' : 'none',
+                  border: activeTab === 1 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
                   borderBottom: 'none',
                   bgcolor: activeTab === 1 ? 'rgba(150, 187, 187, 0.1)' : 'transparent',
                 }}
@@ -344,11 +336,11 @@ const ContactSection: React.FC = () => {
                           mb: 2,
                           display: 'flex',
                           alignItems: 'center',
-                          borderRadius: 2,
+                          borderRadius: 0,
                           transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                           '&:hover': {
                             transform: 'translateY(-4px)',
-                            boxShadow: '0 6px 12px rgba(0,0,0,0.1)'
+                            boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)'
                           }
                         }}
                       >
@@ -425,7 +417,7 @@ const ContactSection: React.FC = () => {
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.2219901290355!2d-74.00369368400567!3d40.71312937933185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a23e28c1191%3A0x49f75d3281df052a!2s150%20Park%20Row%2C%20New%20York%2C%20NY%2010007%2C%20USA!5e0!3m2!1sen!2sbg!4v1445427717798" 
                   width="100%" 
                   height="500px" 
-                  style={{ border: 0, borderRadius: 12 }}
+                  style={{ border: 0, borderRadius: 0 }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -436,7 +428,7 @@ const ContactSection: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} md={6}>
-                <Card sx={{ height: '100%', borderRadius: 3 }}>
+                <Card sx={{ height: '100%', borderRadius: 0 }}>
                   <CardContent sx={{ p: 4 }}>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
                       Contact Information

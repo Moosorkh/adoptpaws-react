@@ -9,12 +9,12 @@ import {
   Paper, 
   Typography,
   CircularProgress,
-  Fade,
   useTheme,
   useMediaQuery
 } from '@mui/material';
 import { Person, Email, Message, Send } from '@mui/icons-material';
 import { api } from '../services/api';
+import RevealText from './motion/RevealText';
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -124,25 +124,23 @@ const ContactForm: React.FC = () => {
 
   return (
     <>
-      <Fade in={true} timeout={800}>
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            borderRadius: 4,
+      <RevealText>
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: 0,
+            border: '1px solid',
+            borderColor: 'divider',
             overflow: 'hidden',
             maxWidth: isMobile ? '100%' : 600,
             mx: 'auto',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-            '&:hover': {
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-            }
           }}
         >
-          <Box sx={{ 
-            bgcolor: '#96BBBB', 
-            color: 'white', 
-            p: 3, 
-            textAlign: 'center' 
+          <Box sx={{
+            bgcolor: '#96BBBB',
+            color: 'white',
+            p: 3,
+            textAlign: 'center'
           }}>
             <Typography variant="h5" fontWeight="bold">
               Get In Touch
@@ -160,7 +158,7 @@ const ContactForm: React.FC = () => {
               flexDirection: 'column',
               gap: 3,
               p: 4,
-              bgcolor: '#F5F5F5',
+              bgcolor: '#f8f8f8',
             }}
           >
             <TextField
@@ -225,22 +223,23 @@ const ContactForm: React.FC = () => {
               variant="contained" 
               size="large"
               disabled={isSubmitting}
-              sx={{ 
+              sx={{
                 bgcolor: '#3E4E50',
                 py: 1.5,
                 '&:hover': {
                   bgcolor: '#96BBBB',
                 },
-                borderRadius: 2,
+                borderRadius: 0,
                 fontWeight: 'bold',
+                letterSpacing: '0.05em',
               }}
               startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
             >
-              {isSubmitting ? 'Sending...' : 'Send Message'}
+              {isSubmitting ? '[ Sending... ]' : '[ Send Message ]'}
             </Button>
           </Box>
         </Paper>
-      </Fade>
+      </RevealText>
 
       <Snackbar
         open={openSnackbar}

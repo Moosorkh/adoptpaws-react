@@ -172,7 +172,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
           >
             <Box
               sx={{
-                bgcolor: message.sender === 'user' ? '#96BBBB' : 'white',
+                bgcolor: message.sender === 'user' ? '#96BBBB' : '#ffffff',
                 color: message.sender === 'user' ? 'white' : 'text.primary',
                 p: 1.5,
                 borderRadius:
@@ -205,7 +205,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
           <Box sx={{ alignSelf: 'flex-start' }}>
             <Box
               sx={{
-                bgcolor: 'white',
+                bgcolor: '#ffffff',
                 p: 1.5,
                 borderRadius: '12px 12px 12px 0',
                 boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
@@ -226,9 +226,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
       {/* Input */}
       <Box
         sx={{
-          bgcolor: 'white',
+          bgcolor: '#ffffff',
           p: 2,
-          borderTop: '1px solid #eee',
+          borderTop: '1px solid rgba(0, 0, 0, 0.1)',
           display: 'flex',
           gap: 1
         }}

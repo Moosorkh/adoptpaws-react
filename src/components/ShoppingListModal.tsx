@@ -146,7 +146,7 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
                   py: 6
                 }}
               >
-                <ShoppingCart sx={{ fontSize: 60, color: '#ccc', mb: 2 }} />
+                <ShoppingCart sx={{ fontSize: 60, color: '#cccccc', mb: 2 }} />
                 <Typography sx={{ color: '#999', fontWeight: 'medium', mb: 1 }}>
                   Your cart is empty
                 </Typography>

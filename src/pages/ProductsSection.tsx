@@ -48,6 +48,9 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import AuthDialog from '../components/AuthDialog';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
+import RevealText from '../components/motion/RevealText';
+import Marquee from '../components/motion/Marquee';
+import MaskedWords from '../components/motion/MaskedWords';
 
 interface ProductsSectionProps {
   onOpenShoppingList: () => void;
@@ -205,43 +208,33 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
       <Box>
       <Box id="products-section" sx={{ mb: 8, mt: 2 }}>
         {/* Header Section */}
-        <Typography 
-          variant="h4" 
-          component="h2" 
-          sx={{ 
-            mb: 4, 
-            textAlign: 'center',
-            color: '#3E4E50',
-            fontWeight: 'bold',
-            position: 'relative',
-            pb: 2,
-            '&:after': {
-              content: '""',
-              position: 'absolute',
-              bottom: 0,
-              left: '50%',
-              width: '80px',
-              height: '3px',
-              backgroundColor: '#96BBBB',
-              transform: 'translateX(-50%)'
-            }
+        <Typography
+          variant="h2"
+          component="h2"
+          sx={{
+            mb: 3,
+            fontWeight: 700,
+            fontSize: { xs: '2rem', md: '3rem' },
           }}
         >
-          Adopt a Friend
+          <MaskedWords lines={['[ Adopt a Friend ]']} justify="center" />
         </Typography>
-        
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            textAlign: 'center', 
-            mb: 5, 
-            maxWidth: 800, 
-            mx: 'auto',
-            color: 'text.secondary'
-          }}
-        >
-          Meet our wonderful pets waiting for their forever homes. Each one has a unique personality and lots of love to give.
-        </Typography>
+
+        <RevealText>
+          <Typography
+            variant="h6"
+            sx={{
+              textAlign: 'center',
+              mb: 5,
+              maxWidth: 800,
+              mx: 'auto',
+              color: 'text.secondary',
+              fontWeight: 400,
+            }}
+          >
+            Meet our wonderful pets waiting for their forever homes. Each one has a unique personality and lots of love to give.
+          </Typography>
+        </RevealText>
         
         {/* Loading State */}
         {loading && (
@@ -265,7 +258,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
           sx={{ 
             mb: 4, 
             p: 2, 
-            borderRadius: 3,
+            borderRadius: 0,
             bgcolor: '#f8f8f8',
             mx: 'auto',
             maxWidth: 1200
@@ -287,7 +280,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                 px: 2,
                 py: 0.5,
                 flex: 1,
-                borderRadius: 5,
+                borderRadius: 0,
                 border: '1px solid #e0e0e0'
               }}
             >
@@ -321,7 +314,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                 endIcon={showFilters ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                 onClick={() => setShowFilters(!showFilters)}
                 sx={{ 
-                  borderRadius: 3,
+                  borderRadius: 0,
                   borderColor: '#96BBBB',
                   color: '#3E4E50',
                   '&:hover': {
@@ -338,7 +331,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                   value={sortBy}
                   onChange={handleSortChange}
                   label="Sort By"
-                  sx={{ borderRadius: 3 }}
+                  sx={{ borderRadius: 0 }}
                 >
                   <MenuItem value="">None</MenuItem>
                   <MenuItem value="price-asc">Price: Low to High</MenuItem>
@@ -404,7 +397,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               py: 8,
               color: 'text.secondary'
             }}>
-              <Pets sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
+              <Pets sx={{ fontSize: 64, color: '#cccccc', mb: 2 }} />
               <Typography variant="h6" gutterBottom>
                 No pets found
               </Typography>
@@ -425,15 +418,16 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
             </Box>
           ) : (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', mb: 8 }}>
-              {sortedProducts.map((product) => {
+              {sortedProducts.map((product, idx) => {
                 const productFavorite = favorites.find(fav => fav.product_id === product.id);
                 return (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
+                  <ProductCard
+                    key={product.id}
+                    product={product}
                     onAuthRequired={() => setAuthDialogOpen(true)}
                     initialFavorite={productFavorite || null}
                     onFavoriteChange={fetchFavorites}
+                    index={idx}
                   />
                 );
               })}
@@ -441,27 +435,33 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
           )}
         </Box>
 
+        <Box sx={{ mx: { xs: -2, sm: -4 }, mb: 8 }}>
+          <Marquee text="ADOPT · DON'T SHOP" />
+        </Box>
+
         {/* Adoption Process */}
         <Box sx={{ mb: 8 }}>
-          <Typography 
-            variant="h5" 
-            component="h3" 
-            sx={{ 
-              mb: 4, 
-              textAlign: 'center',
-              color: '#3E4E50',
-              fontWeight: 'bold'
-            }}
-          >
-            How Adoption Works
-          </Typography>
+          <RevealText>
+            <Typography
+              variant="h5"
+              component="h3"
+              sx={{
+                mb: 4,
+                textAlign: 'center',
+                color: 'text.primary',
+                fontWeight: 700
+              }}
+            >
+              How Adoption Works
+            </Typography>
+          </RevealText>
           
           <Grid container spacing={3} justifyContent="center">
             <Grid item xs={12} sm={6} md={3}>
               <Card 
                 sx={{ 
                   height: '100%', 
-                  borderRadius: 3,
+                  borderRadius: 0,
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-8px)',
@@ -488,7 +488,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               <Card 
                 sx={{ 
                   height: '100%', 
-                  borderRadius: 3,
+                  borderRadius: 0,
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-8px)',
@@ -515,7 +515,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               <Card 
                 sx={{ 
                   height: '100%', 
-                  borderRadius: 3,
+                  borderRadius: 0,
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-8px)',
@@ -542,7 +542,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               <Card 
                 sx={{ 
                   height: '100%', 
-                  borderRadius: 3,
+                  borderRadius: 0,
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-8px)',
@@ -574,7 +574,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
             sx={{ 
               p: 2, 
               mb: 4, 
-              borderRadius: 3,
+              borderRadius: 0,
               bgcolor: 'rgba(150, 187, 187, 0.15)',
               border: '1px dashed #96BBBB',
               maxWidth: 1000,
@@ -594,7 +594,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               sx={{ 
                 mt: 1, 
                 height: 8, 
-                borderRadius: 4,
+                borderRadius: 0,
                 bgcolor: 'rgba(255,255,255,0.8)',
                 '& .MuiLinearProgress-bar': {
                   bgcolor: '#96BBBB'
@@ -611,16 +611,18 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
           elevation={3} 
           sx={{ 
             p: 0, 
-            borderRadius: 4,
+            borderRadius: 0,
             mb: 5,
             maxWidth: 1000,
             mx: 'auto',
             overflow: 'hidden'
           }}
         >
-          <Box sx={{ 
-            bgcolor: '#3E4E50', 
-            color: 'white', 
+          <Box sx={{
+            bgcolor: '#3E4E50',
+            color: '#ffffff',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
             p: 3,
             display: 'flex',
             justifyContent: 'space-between',
@@ -683,7 +685,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                   value={adoptionProgress} 
                   sx={{ 
                     height: 8, 
-                    borderRadius: 4,
+                    borderRadius: 0,
                     '& .MuiLinearProgress-bar': {
                       bgcolor: '#96BBBB'
                     }
@@ -699,7 +701,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                 py: 6,
                 color: 'text.secondary'
               }}>
-                <ShoppingCart sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
+                <ShoppingCart sx={{ fontSize: 64, color: '#cccccc', mb: 2 }} />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   Your cart is empty
                 </Typography>
@@ -755,7 +757,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                           startIcon={<Delete />}
                           onClick={handleClearCart}
                           disabled={adoptionProgress > 0 && adoptionProgress < 100}
-                          sx={{ borderRadius: 2 }}
+                          sx={{ borderRadius: 0 }}
                         >
                           Clear Cart
                         </Button>
@@ -770,7 +772,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                             '&:hover': {
                               bgcolor: '#96BBBB',
                             },
-                            borderRadius: 2
+                            borderRadius: 0
                           }}
                         >
                           View Details
@@ -787,7 +789,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
                             '&:hover': {
                               bgcolor: '#7a9b9b',
                             },
-                            borderRadius: 2
+                            borderRadius: 0
                           }}
                         >
                           1 Click Checkout
