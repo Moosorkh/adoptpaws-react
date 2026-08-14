@@ -161,6 +161,10 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_r
 CREATE INDEX IF NOT EXISTS idx_adoption_requests_user ON adoption_requests(user_id, created_at);
 `;
 
+const D1_SCHEMA_STATEMENTS = D1_SCHEMA_SQL.split(';')
+  .map((statement) => statement.trim())
+  .filter((statement) => statement.length > 0);
+
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -325,7 +329,9 @@ async function requireAuth(request: Request, env: Env): Promise<AuthUser | Respo
 async function initializeDatabase(env: Env): Promise<void> {
   if (!initPromise) {
     initPromise = (async () => {
-      await env.DB.exec(D1_SCHEMA_SQL);
+      for (const statement of D1_SCHEMA_STATEMENTS) {
+        await env.DB.prepare(statement).run();
+      }
 
       const defaults = [
         ['site_name', 'AdoptPaws'],
@@ -514,13 +520,13 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     });
   }
 
-  await initializeDatabase(env);
-
-  const url = new URL(request.url);
-  const path = url.pathname.replace(/^\/api/, '') || '/';
-  const method = request.method.toUpperCase();
-
   try {
+    await initializeDatabase(env);
+
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/^\/api/, '') || '/';
+    const method = request.method.toUpperCase();
+
     if (method === 'GET' && path === '/health') {
       return jsonResponse({ status: 'ok', message: 'AdoptPaws API is running on Cloudflare' });
     }
