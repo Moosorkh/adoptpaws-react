@@ -30,6 +30,7 @@ import {
 } from '@mui/icons-material';
 import { api } from '../services/api';
 
+
 const AboutSection: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
@@ -219,7 +220,7 @@ const AboutSection: React.FC = () => {
                 >
                   <Box 
                     component="img"
-                    src="https://muensterpet.com/cdn/shop/articles/shutterstock_612226109_Alt.jpg"
+                    src="/images/about-image.jpg"
                     alt="Dog sitting in front of a laptop looking back"
                     sx={{
                       width: '100%',
