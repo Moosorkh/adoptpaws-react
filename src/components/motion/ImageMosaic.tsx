@@ -37,6 +37,17 @@ function scatterFor(index: number) {
   const rx = fract(Math.sin(index * 12.9898) * 43758.5453);
   const ry = fract(Math.sin(index * 78.233) * 12345.6789);
   const rz = fract(Math.sin(index * 39.425) * 24634.6345);
+
+  // The first seed resolves to the extreme top-left corner. Keep that tile
+  // scattered, but near the rest of the pets instead of over the controls.
+  if (index === 0) {
+    return {
+      x: -260,
+      y: -110,
+      z: -300 - rz * 600,
+    };
+  }
+
   return {
     x: (rx - 0.5) * 1150,
     y: (ry - 0.5) * 640,
@@ -65,12 +76,9 @@ const Tile: React.FC<TileProps> = ({ image, index, total, progress }) => {
   const x = useTransform(progress, [start, end], [s.x, 0], opts);
   const y = useTransform(progress, [start, end], [s.y, 0], opts);
   const z = useTransform(progress, [start, end], [s.z, 0], opts);
-  // Tiles stay visible the whole time — they arrive scattered, they don't fade in.
-  const blur = useTransform(progress, [start, end], [5, 0], opts);
-  const filter = useTransform(blur, (b) => `blur(${b}px)`);
 
   return (
-    <motion.div style={{ scale, x, y, z, filter, transformStyle: 'preserve-3d' }}>
+    <motion.div style={{ scale, x, y, z, transformStyle: 'preserve-3d' }}>
       <Box
         component="img"
         src={image.src}

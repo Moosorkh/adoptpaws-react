@@ -30,6 +30,7 @@ const ContactForm: React.FC = () => {
     email: '',
     message: ''
   });
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -162,47 +163,55 @@ const ContactForm: React.FC = () => {
             }}
           >
             <TextField
-              label="Name"
               name="name"
               value={formData.name}
               onChange={handleChange}
+              onFocus={() => setFocusedField('name')}
+              onBlur={() => setFocusedField(null)}
+              placeholder={focusedField === 'name' ? '' : 'Name'}
               variant="outlined"
               fullWidth
               required
               error={!!formErrors.name}
               helperText={formErrors.name}
+              inputProps={{ 'aria-label': 'Name' }}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
+                endAdornment: (
+                  <InputAdornment position="end">
                     <Person color="primary" />
                   </InputAdornment>
                 ),
               }}
             />
             <TextField
-              label="Email"
               name="email"
               value={formData.email}
               onChange={handleChange}
+              onFocus={() => setFocusedField('email')}
+              onBlur={() => setFocusedField(null)}
+              placeholder={focusedField === 'email' ? '' : 'Email'}
               variant="outlined"
               type="email"
               fullWidth
               required
               error={!!formErrors.email}
               helperText={formErrors.email}
+              inputProps={{ 'aria-label': 'Email' }}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
+                endAdornment: (
+                  <InputAdornment position="end">
                     <Email color="primary" />
                   </InputAdornment>
                 ),
               }}
             />
             <TextField
-              label="Message"
               name="message"
               value={formData.message}
               onChange={handleChange}
+              onFocus={() => setFocusedField('message')}
+              onBlur={() => setFocusedField(null)}
+              placeholder={focusedField === 'message' ? '' : 'Message'}
               variant="outlined"
               multiline
               rows={5}
@@ -210,9 +219,10 @@ const ContactForm: React.FC = () => {
               required
               error={!!formErrors.message}
               helperText={formErrors.message}
+              inputProps={{ 'aria-label': 'Message' }}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 1.5 }}>
+                endAdornment: (
+                  <InputAdornment position="end" sx={{ alignSelf: 'flex-end', mb: 1.5 }}>
                     <Message color="primary" />
                   </InputAdornment>
                 ),
