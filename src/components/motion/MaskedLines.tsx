@@ -29,7 +29,7 @@ const MaskedLines: React.FC<MaskedLinesProps> = ({
   delay = 0,
   stagger = 0.1,
   duration = 0.9,
-  ghostColor = 'rgba(51, 51, 51, 0.16)',
+  ghostColor = 'rgba(72, 48, 48, 0.16)',
 }) => {
   return (
     <Box

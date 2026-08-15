@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container } from '@mui/material';
+import { Box } from '@mui/material';
 import Banner from '../components/Banner';
 import AboutSection from './AboutSection';
 import ProductsSection from './ProductsSection';
@@ -45,11 +45,12 @@ const HomePage: React.FC = () => {
     <>
       <Banner title="Open Your Heart to a New Friend" />
       
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Full-bleed: each section manages its own horizontal padding */}
+      <Box sx={{ py: 4 }}>
         <AboutSection />
         <ProductsSection onOpenShoppingList={() => setOpenModal(true)} />
         <ContactSection />
-      </Container>
+      </Box>
 
       <ShoppingListModal 
         open={openModal} 

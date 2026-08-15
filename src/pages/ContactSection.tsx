@@ -100,7 +100,7 @@ const ContactSection: React.FC = () => {
   ];
 
   return (
-    <Box id="contact-section" sx={{ mb: 8, mt: 4 }}>
+    <Box id="contact-section" sx={{ mb: 8, mt: 4, px: { xs: 2, md: 6 } }}>
       <Fade in={true} timeout={800}>
         <Box>
           <Typography

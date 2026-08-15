@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Box, Typography, Chip, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Typography, Chip } from '@mui/material';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import RevealText from './motion/RevealText';
 import ImageMosaic from './motion/ImageMosaic';
@@ -25,8 +25,6 @@ const MOSAIC_IMAGES = [
 const TAGS = ['ADOPTION', 'FOSTERING', 'RESCUE STORIES', 'COMMUNITY'];
 
 const Banner: React.FC<BannerProps> = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const heroRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -39,6 +37,8 @@ const Banner: React.FC<BannerProps> = () => {
   const headlineScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.92]);
   const subtextOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
   const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
+  // Gentle parallax on the hero photo as the hero scrolls away.
+  const heroImageY = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
 
   return (
     <Box
@@ -52,39 +52,91 @@ const Banner: React.FC<BannerProps> = () => {
       }}
     >
       {/* Clearance for the header wordmark while it is still at hero scale */}
-      <Box sx={{ height: { xs: '14vh', md: '24vh' } }} />
+      <Box sx={{ height: { xs: '12vh', md: '20vh' } }} />
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 3 }}>
+      {/* Hero photo — full-bleed, with the title set inside it on the floor
+          just below the dog's face. A soft in-palette scrim keeps the
+          lettering legible over the mid-tone timber. */}
+      <Box
+        sx={{
+          position: 'relative',
+          mx: { xs: -2, md: -6 },
+          overflow: 'hidden',
+          height: { xs: '52vh', sm: '56vh', md: '62vh' },
+        }}
+      >
+        <Box
+          component={motion.div}
+          style={{ y: heroImageY }}
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          sx={{ height: '118%', width: '100%' }}
+        >
+          <Box
+            component="img"
+            src="/images/Doggy-banner.jpg"
+            alt="A pug resting on a wooden floor"
+            sx={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </Box>
+
+        {/* Scrim, tinted with the photo's own espresso rather than black */}
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            background:
+              'linear-gradient(to bottom, rgba(72,48,48,0) 34%, rgba(72,48,48,0.34) 52%, rgba(72,48,48,0.68) 100%)',
+          }}
+        />
+
+        {/* Title, centred under the dog's face */}
         <Box
           component={motion.div}
           style={{ opacity: headlineOpacity, y: headlineY, scale: headlineScale }}
           sx={{
-            transformOrigin: 'left top',
-            maxWidth: 720,
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: { xs: '54%', md: '56%' },
+            px: 3,
+            textAlign: 'center',
+            color: '#EAE5D7',
             fontWeight: 700,
             lineHeight: 1.05,
-            fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4.5rem' },
+            fontSize: { xs: '2rem', sm: '3rem', md: '4.25rem' },
+            textShadow: '0 2px 24px rgba(48,32,32,0.45)',
           }}
         >
-          <Typography component="h1" variant={isMobile ? 'h3' : 'h1'} sx={{ font: 'inherit', textTransform: 'none', m: 0 }}>
-            <MaskedWords lines={["You feel the bond", "before it's official."]} stagger={0.075} />
+          <Typography component="h1" sx={{ font: 'inherit', color: 'inherit', textTransform: 'none', m: 0 }}>
+            <MaskedWords lines={["You feel the bond", "before it's official."]} stagger={0.075} justify="center" />
           </Typography>
         </Box>
 
+        {/* Supporting line, sitting in the darkest corner of the frame */}
         <Box
           component={motion.div}
           style={{ opacity: subtextOpacity }}
           sx={{
+            position: 'absolute',
+            right: { xs: 16, md: 48 },
+            bottom: { xs: 16, md: 32 },
+            display: { xs: 'none', sm: 'block' },
             maxWidth: 340,
-            color: 'text.secondary',
+            color: 'rgba(234, 229, 215, 0.92)',
             fontFamily: 'monospace',
-            fontSize: '0.875rem',
+            fontSize: '0.8rem',
             lineHeight: 1.6,
-            textAlign: 'left',
+            textAlign: 'right',
+            textShadow: '0 1px 12px rgba(48,32,32,0.6)',
           }}
         >
           <MaskedLines
             delay={0.35}
+            ghostColor="rgba(234, 229, 215, 0.22)"
             lines={[
               'AdoptPaws connects loving homes',
               'with pets who need them — every',
@@ -94,72 +146,77 @@ const Banner: React.FC<BannerProps> = () => {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, mt: 4, mb: 2 }}>
-        <RevealText delay={0.25}>
-          <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-            {TAGS.map((tag) => (
-              <Chip
-                key={tag}
-                label={tag}
-                variant="outlined"
-                sx={{
-                  borderColor: 'divider',
-                  color: 'text.secondary',
-                  borderRadius: 0,
-                  fontSize: '0.7rem',
-                  letterSpacing: '0.05em',
-                }}
-              />
-            ))}
-          </Box>
-        </RevealText>
+      {/* The controls share the pinned stage with the photos, so the context
+          remains visible throughout the mosaic assembly. */}
+      <Box sx={{ mt: { xs: 2, md: 4 } }}>
+        <ImageMosaic
+          images={MOSAIC_IMAGES}
+          header={(
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                <RevealText delay={0.25}>
+                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                    {TAGS.map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        variant="outlined"
+                        sx={{
+                          borderColor: 'divider',
+                          color: 'text.secondary',
+                          borderRadius: 0,
+                          fontSize: '0.7rem',
+                          letterSpacing: '0.05em',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </RevealText>
 
-        <Box
-          component={motion.div}
-          style={{ opacity: scrollHintOpacity }}
-          sx={{
-            display: { xs: 'none', md: 'block' },
-            color: 'text.secondary',
-            fontSize: '0.7rem',
-            letterSpacing: '0.1em',
-            fontFamily: 'monospace',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <motion.span
-            animate={{ y: [0, 4, 0] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ display: 'inline-block' }}
-          >
-            [ SCROLL DOWN ]
-          </motion.span>
-        </Box>
-      </Box>
+                <Box
+                  component={motion.div}
+                  style={{ opacity: scrollHintOpacity }}
+                  sx={{
+                    display: { xs: 'none', md: 'block' },
+                    color: 'text.secondary',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.1em',
+                    fontFamily: 'monospace',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <motion.span
+                    animate={{ y: [0, 4, 0] }}
+                    transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{ display: 'inline-block' }}
+                  >
+                    [ SCROLL DOWN ]
+                  </motion.span>
+                </Box>
+              </Box>
 
-      <RevealText delay={0.35}>
-        <Box
-          component={motion.div}
-          whileHover={{ x: 6 }}
-          onClick={() => scrollToSection('products-section')}
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 1,
-            mt: 2,
-            mb: 4,
-            cursor: 'pointer',
-            color: 'text.primary',
-            fontWeight: 500,
-            letterSpacing: '0.05em',
-          }}
-        >
-          <Typography component="span" sx={{ fontWeight: 500 }}>[ VIEW ALL PETS ]</Typography>
-        </Box>
-      </RevealText>
-
-      {/* Scrolls in scattered, pins to the viewport, then assembles on scroll */}
-      <Box sx={{ mt: { xs: 4, md: 8 } }}>
-        <ImageMosaic images={MOSAIC_IMAGES} />
+              <RevealText delay={0.35}>
+                <Box
+                  component={motion.div}
+                  whileHover={{ x: 6 }}
+                  onClick={() => scrollToSection('products-section')}
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mt: 2,
+                    cursor: 'pointer',
+                    color: 'text.primary',
+                    fontWeight: 500,
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  <Typography component="span" sx={{ fontWeight: 500 }}>[ VIEW ALL PETS ]</Typography>
+                </Box>
+              </RevealText>
+            </Box>
+          )}
+        />
       </Box>
     </Box>
   );
