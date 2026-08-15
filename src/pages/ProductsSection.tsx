@@ -406,7 +406,19 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               </Button>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, md: 1.5 }, alignItems: 'stretch', mb: 8 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: 'minmax(0, 1fr)',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  lg: 'repeat(3, minmax(0, 1fr))',
+                },
+                gap: { xs: 1, md: 1.5 },
+                alignItems: 'stretch',
+                mb: 8,
+              }}
+            >
               {sortedProducts.map((product, idx) => {
                 const productFavorite = favorites.find(fav => fav.product_id === product.id);
                 return (

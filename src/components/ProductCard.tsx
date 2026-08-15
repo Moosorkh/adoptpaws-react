@@ -121,9 +121,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
       transition={{ duration: 0.5, delay: (index % 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       sx={{
         display: 'flex',
-        flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', lg: '1 1 calc(33.333% - 8px)' },
-        minWidth: { xs: '100%', sm: 280 },
-        maxWidth: 'none',
+        width: '100%',
+        minWidth: 0,
       }}
     >
       <Card
