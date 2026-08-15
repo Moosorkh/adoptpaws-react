@@ -16,7 +16,7 @@ interface TeamAccordionProps {
 
 // Timings measured from the developios.com process accordion.
 const WIDTH_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)';
-const WIDTH_TRANSITION = `flex-grow 0.9s ${WIDTH_EASE}`;
+const WIDTH_TRANSITION = `flex-basis 0.9s ${WIDTH_EASE}`;
 const BODY_TRANSITION = 'opacity 0.6s ease, transform 0.6s ease';
 const IMAGE_TRANSITION = 'opacity 0.7s ease, transform 0.7s ease';
 
@@ -83,7 +83,7 @@ const TeamAccordion: React.FC<TeamAccordionProps> = ({ members, cycleMs = 5000 }
 
   return (
     <Box
-      sx={{ display: 'flex', gap: '12px', width: '100%', height: 460 }}
+      sx={{ display: 'flex', gap: '12px', width: '100%', height: 460, overflowX: 'auto', overflowY: 'hidden' }}
       onMouseLeave={() => setPaused(false)}
     >
       {members.map((m, i) => {
@@ -96,11 +96,10 @@ const TeamAccordion: React.FC<TeamAccordionProps> = ({ members, cycleMs = 5000 }
               setPaused(true);
             }}
             sx={{
-              flexGrow: isActive ? 2 : 1,
-              flexBasis: 0,
+              flex: `0 0 ${isActive ? 320 : 160}px`,
               minWidth: 0,
               transition: WIDTH_TRANSITION,
-              willChange: 'flex-grow',
+              willChange: 'flex-basis',
               overflow: 'hidden',
               position: 'relative',
               cursor: 'pointer',
