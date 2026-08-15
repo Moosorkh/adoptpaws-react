@@ -365,7 +365,7 @@ async function initializeDatabase(env: Env): Promise<void> {
           'Dr. Sarah Chen',
           'Founder & Director',
           'Animal lover and community advocate with 15 years of experience in animal welfare. Dr. Chen founded AdoptPaws with a mission to create lasting bonds between pets and families.',
-          'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=400&fit=crop',
+          '/images/sara-chen.webp',
           1,
         ],
         [
@@ -373,7 +373,7 @@ async function initializeDatabase(env: Env): Promise<void> {
           'Michael Rodriguez',
           'Adoption Coordinator',
           'Former veterinary assistant passionate about finding perfect matches for our pets. Michael brings expertise in animal behavior and family counseling to every adoption.',
-          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+          '/images/michael-rodriguez.webp',
           2,
         ],
         [
@@ -381,7 +381,7 @@ async function initializeDatabase(env: Env): Promise<void> {
           'Emily Watson',
           'Veterinary Care Manager',
           'Licensed veterinary technician with a decade of experience. Emily ensures all our animals receive top-quality medical care and are healthy before adoption.',
-          'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop',
+          '/images/emily-watson.webp',
           3,
         ],
         [
@@ -389,7 +389,7 @@ async function initializeDatabase(env: Env): Promise<void> {
           'James Park',
           'Community Outreach Director',
           'Dedicated to building partnerships and educating the community about responsible pet ownership. James organizes adoption events and volunteer programs.',
-          'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=400&h=400&fit=crop',
+          '/images/james-park.webp',
           4,
         ],
         [
@@ -397,7 +397,7 @@ async function initializeDatabase(env: Env): Promise<void> {
           'Lisa Thompson',
           'Foster Program Manager',
           'Coordinates our network of foster families who provide temporary homes for animals. Lisa has personally fostered over 100 animals in her career.',
-          'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop',
+          '/images/lisa-thompson.webp',
           5,
         ],
         [
@@ -405,7 +405,7 @@ async function initializeDatabase(env: Env): Promise<void> {
           'David Kim',
           'Operations Manager',
           'Handles daily operations and facility management. David ensures our shelter runs smoothly and provides the best environment for our animals.',
-          'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop',
+          '/images/david-kim.webp',
           6,
         ],
       ];
