@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
 import {
   AppBar,
@@ -74,7 +74,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     () => typeof window !== 'undefined' && window.location.hash === '#dashboard'
   );
   const logoRef = useRef<HTMLDivElement>(null);
-  const [maxLogoScale, setMaxLogoScale] = useState(1);
+  // The wordmark is rendered at hero size and scaled DOWN into the navbar.
+  // Scaling text *up* with a transform makes the browser stretch a bitmap
+  // rasterised at the small layout size, which is what made the title look
+  // blurry; downscaling a large raster always stays crisp.
+  const [logoBox, setLogoBox] = useState({ topScale: 1, navScale: 1, w: 0, h: 0 });
 
   useEffect(() => {
     const onHashChange = () => setIsDashboard(window.location.hash === '#dashboard');
@@ -82,23 +86,42 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  // Measure how far the wordmark must scale to span the header's content width.
-  useEffect(() => {
+  // Measure the hero-size wordmark, then derive the two ends of the morph.
+  useLayoutEffect(() => {
     const measure = () => {
       const el = logoRef.current;
       if (!el) return;
       const naturalWidth = el.offsetWidth;
+      const naturalHeight = el.offsetHeight;
+      if (!naturalWidth) return;
+
+      // Read the size off the text itself — the wrapper has no font-size of
+      // its own and would report the inherited 16px, inverting the morph.
+      const textEl = el.querySelector('h1') ?? el;
+      const renderedPx = parseFloat(getComputedStyle(textEl).fontSize);
+      const navPx = isMobile ? 20 : 25.6; // 1.25rem / 1.6rem
+      const navScale = navPx / renderedPx;
+
       const available = el.closest('.MuiToolbar-root')?.clientWidth ?? window.innerWidth;
-      if (naturalWidth > 0) {
-        setMaxLogoScale(Math.max(1, available / naturalWidth));
-      }
+      // Clamped to 1: scaling above the rendered size would reintroduce the
+      // blur this whole approach exists to avoid.
+      const topScale = isDashboard ? navScale : Math.min(1, available / naturalWidth);
+
+      setLogoBox({
+        topScale,
+        navScale,
+        // The element is taken out of flow, so the placeholder keeps the
+        // navbar-sized footprint the Toolbar needs to lay out around.
+        w: naturalWidth * navScale,
+        h: naturalHeight * navScale,
+      });
     };
     measure();
     // Re-measure once the webfont lands — the fallback font is a different width.
     document.fonts?.ready.then(measure).catch(() => {});
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [isMobile]);
+  }, [isMobile, isDashboard]);
 
   // Continuous scroll-linked morph (Produx-style) instead of a hard cutoff.
   const { scrollY } = useScroll();
@@ -107,11 +130,12 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
 
   // Giant hero wordmark shrinking into the navbar, matching the reference's
   // steep ease-out (most of the shrink happens in the first ~200px of scroll).
-  const S = isDashboard ? 1 : maxLogoScale;
+  const { topScale: sTop, navScale: sNav } = logoBox;
+  const ease = (k: number) => sNav + (sTop - sNav) * k;
   const logoScale = useTransform(
     scrollY,
     [0, 100, 200, 300, 400, 460],
-    [S, 1 + (S - 1) * 0.368, 1 + (S - 1) * 0.141, 1 + (S - 1) * 0.043, 1 + (S - 1) * 0.006, 1]
+    [sTop, ease(0.368), ease(0.141), ease(0.043), ease(0.006), sNav]
   );
   // Nav links stay hidden over the giant wordmark, then fade in.
   const navOpacity = useTransform(scrollY, isDashboard ? [0, 1] : [160, 340], [isDashboard ? 1 : 0, 1]);
@@ -165,8 +189,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
         <Toolbar disableGutters sx={{ py: scrolled ? 1 : 2, transition: 'padding 0.3s ease' }}>
           {/* Logo — morphs from a full-width hero wordmark down into the navbar */}
           <Box
-            component={motion.div}
-            ref={logoRef}
             onClick={() => {
               // Navigate to homepage if on dashboard, otherwise scroll to top
               if (window.location.hash === '#dashboard') {
@@ -174,23 +196,36 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               }
               scrollToTop();
             }}
-            style={{ scale: logoScale }}
             sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
+              position: 'relative',
+              // Navbar-sized footprint; the hero-scale wordmark overflows it.
+              width: logoBox.w || 'auto',
+              height: logoBox.h || 'auto',
               cursor: 'pointer',
-              transformOrigin: 'left top',
-              willChange: 'transform',
               pointerEvents: navInteractive ? 'auto' : 'none',
             }}
           >
+            <Box
+              component={motion.div}
+              ref={logoRef}
+              style={{ scale: logoScale }}
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                transformOrigin: 'left top',
+                willChange: 'transform',
+                whiteSpace: 'nowrap',
+              }}
+            >
             <Typography
               variant={isMobile ? 'h6' : 'h5'}
               component="h1"
               sx={{
                 color: 'text.primary',
                 fontWeight: 700,
-                fontSize: { xs: '1.25rem', md: '1.6rem' },
+                // Rendered at hero size so the morph only ever scales down.
+                fontSize: { xs: '16vw', md: '17vw' },
                 letterSpacing: '0.02em',
                 textTransform: 'uppercase',
                 lineHeight: 1,
@@ -217,6 +252,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               </Box>
               ptPaws
             </Typography>
+            </Box>
           </Box>
 
           {/* Spacer — the wordmark is transform-scaled so it can't drive layout */}

@@ -9,8 +9,22 @@ import {
   Avatar,
   CircularProgress
 } from '@mui/material';
-import { Close, Send, SupportAgent } from '@mui/icons-material';
+import { Close, Login, Send, SupportAgent } from '@mui/icons-material';
+import { keyframes } from '@emotion/react';
 import { useAuth } from '../context/AuthContext';
+import AuthDialog from './AuthDialog';
+
+// Enter animation replayed every time the widget is reopened.
+const chatAppear = keyframes`
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+`;
 
 interface Message {
   id: string;
@@ -42,7 +56,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  // Guests may send one message before being asked to log in.
+  const [guestNeedsLogin, setGuestNeedsLogin] = useState(false);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,20 +69,45 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, guestNeedsLogin]);
+
+  // When the chat opens, auto-focus the input and scroll to the latest message.
+  useEffect(() => {
+    if (!open) return;
+
+    const t = setTimeout(() => {
+      inputRef.current?.focus();
+      scrollToBottom();
+    }, 50);
+
+    return () => clearTimeout(t);
+  }, [open]);
+
+  // Clear any pending simulated-response timer if the widget unmounts.
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Once a guest logs in (e.g. via the chat's login prompt), re-enable
+  // the conversation and remove the login required notice.
+  useEffect(() => {
+    if (isAuthenticated) {
+      setGuestNeedsLogin(false);
+    }
+  }, [isAuthenticated]);
 
   const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-
-    if (!isAuthenticated) {
-      alert('Please login to use the chat feature');
-      return;
-    }
+    const text = inputMessage.trim();
+    if (!text) return;
 
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputMessage,
+      text,
       sender: 'user',
       timestamp: new Date()
     };
@@ -71,9 +115,19 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
 
+    // Guests can send one message before they are asked to log in.
+    if (!isAuthenticated) {
+      setIsTyping(true);
+      typingTimerRef.current = setTimeout(() => {
+        setIsTyping(false);
+        setGuestNeedsLogin(true);
+      }, 900);
+      return;
+    }
+
     // Simulate support response
     setIsTyping(true);
-    setTimeout(() => {
+    typingTimerRef.current = setTimeout(() => {
       const responses = [
         "Thank you for your message! Our team will get back to you shortly.",
         "That's a great question! Let me connect you with our adoption specialist.",
@@ -93,10 +147,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
 
       setMessages(prev => [...prev, supportMessage]);
       setIsTyping(false);
+      typingTimerRef.current = null;
     }, 1500);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  // 'Enter' sends the message; Shift+Enter inserts a newline.
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -106,7 +162,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
   if (!open) return null;
 
   return (
-    <Paper
+    <>
+      <Paper
       elevation={6}
       sx={{
         position: 'fixed',
@@ -118,7 +175,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
         overflow: 'hidden',
         zIndex: 999,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        animation: `${chatAppear} 0.25s ease-out`,
+        transformOrigin: 'bottom right'
       }}
     >
       {/* Header */}
@@ -220,6 +279,37 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
           </Box>
         )}
 
+        {guestNeedsLogin && !isAuthenticated && (
+          <Box sx={{ alignSelf: 'flex-start', maxWidth: '85%' }}>
+            <Box
+              sx={{
+                bgcolor: '#ffffff',
+                p: 1.5,
+                borderRadius: '12px 12px 12px 0',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+              }}
+            >
+              <Typography variant="body2">
+                Thanks for reaching out! 💬 You have reached the guest message
+                limit. Please{' '}
+                <Box
+                  component="span"
+                  onClick={() => setAuthDialogOpen(true)}
+                  sx={{
+                    color: '#3E4E50',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  log in
+                </Box>{' '}
+                or create a free account to continue the conversation.
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
         <div ref={messagesEndRef} />
       </Box>
 
@@ -237,37 +327,66 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ open, onClose }) => {
           fullWidth
           size="small"
           placeholder={
-            isAuthenticated
-              ? 'Type your message...'
-              : 'Login to send messages'
+            !isAuthenticated && guestNeedsLogin
+              ? 'Log in to continue chatting'
+              : 'Type your message...'
           }
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          disabled={!isAuthenticated || isTyping}
+          onKeyDown={handleKeyDown}
+          inputRef={inputRef}
+          disabled={isTyping || (!isAuthenticated && guestNeedsLogin)}
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: 2
             }
           }}
         />
-        <Button
-          variant="contained"
-          onClick={handleSendMessage}
-          disabled={!inputMessage.trim() || !isAuthenticated || isTyping}
-          sx={{
-            minWidth: 'auto',
-            px: 2,
-            bgcolor: '#96BBBB',
-            '&:hover': {
-              bgcolor: '#3E4E50'
-            }
-          }}
-        >
-          <Send fontSize="small" />
-        </Button>
+        {!isAuthenticated && guestNeedsLogin ? (
+          <Button
+            variant="contained"
+            startIcon={<Login />}
+            onClick={() => setAuthDialogOpen(true)}
+            sx={{
+              minWidth: 'auto',
+              px: 2,
+              bgcolor: '#96BBBB',
+              '&:hover': {
+                bgcolor: '#3E4E50'
+              }
+            }}
+          >
+            Login
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={handleSendMessage}
+            disabled={!inputMessage.trim() || isTyping}
+            sx={{
+              minWidth: 'auto',
+              px: 2,
+              bgcolor: '#96BBBB',
+              '&:hover': {
+                bgcolor: '#3E4E50'
+              }
+            }}
+          >
+            <Send fontSize="small" />
+          </Button>
+        )}
       </Box>
-    </Paper>
+      </Paper>
+
+      {/* Auth dialog used when a guest hits the login-required limit */}
+      {authDialogOpen && (
+        <AuthDialog
+          open={authDialogOpen}
+          onClose={() => setAuthDialogOpen(false)}
+          defaultTab="login"
+        />
+      )}
+    </>
   );
 };
 

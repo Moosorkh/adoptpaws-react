@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Box } from '@mui/material';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 interface MarqueeProps {
   text: string;
-  speed?: number;
   repeat?: number;
 }
 
 /**
- * Infinite horizontal scrolling text banner, used as a section divider.
+ * Scroll-driven horizontal text banner.
+ * The text moves forward as you scroll down and backward as you scroll up,
+ * tied to the section's position in the viewport.
  */
-const Marquee: React.FC<MarqueeProps> = ({ text, speed = 24, repeat = 8 }) => {
+const Marquee: React.FC<MarqueeProps> = ({ text, repeat = 8 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Track scroll progress as the section travels through the viewport.
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start end', 'end start'],
+  });
+
+  // Map scroll progress to horizontal translation.
+  // Two copies of the items are rendered, so -50% completes one full loop.
+  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-50%']);
+
   const items = Array.from({ length: repeat }, (_, i) => (
     <Box
       component="span"
@@ -32,6 +46,7 @@ const Marquee: React.FC<MarqueeProps> = ({ text, speed = 24, repeat = 8 }) => {
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         width: '100%',
         overflow: 'hidden',
@@ -42,20 +57,16 @@ const Marquee: React.FC<MarqueeProps> = ({ text, speed = 24, repeat = 8 }) => {
         bgcolor: 'background.default',
       }}
     >
-      <Box
-        sx={{
+      <motion.div
+        style={{
           display: 'flex',
           width: 'fit-content',
-          animation: `marquee-scroll ${speed}s linear infinite`,
-          '@keyframes marquee-scroll': {
-            '0%': { transform: 'translateX(0)' },
-            '100%': { transform: 'translateX(-50%)' },
-          },
+          x,
         }}
       >
         <Box sx={{ display: 'flex' }}>{items}</Box>
         <Box sx={{ display: 'flex' }} aria-hidden="true">{items}</Box>
-      </Box>
+      </motion.div>
     </Box>
   );
 };
