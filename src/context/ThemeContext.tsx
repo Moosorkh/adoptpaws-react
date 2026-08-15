@@ -2,12 +2,14 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { ThemeProvider as MuiThemeProvider, createTheme, Theme } from '@mui/material';
 
 // Original AdoptPaws palette, kept as a single theme.
+// Type colours are sampled from the hero photo (Doggy-banner.jpg) so the
+// lettering sits in the same warm-espresso family as the image.
 export const colors = {
   background: '#EAE5D7',
   surface: '#ffffff',
-  border: 'rgba(62, 78, 80, 0.18)',
-  textPrimary: '#333333',
-  textSecondary: '#666666',
+  border: 'rgba(72, 48, 48, 0.18)',
+  textPrimary: '#483030', // deepest brown in the photo
+  textSecondary: '#786060', // mid warm brown from the floor
   accent: '#96BBBB',
   onAccent: '#ffffff',
 };

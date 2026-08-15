@@ -9,6 +9,8 @@ interface MosaicImage {
 
 interface ImageMosaicProps {
   images: MosaicImage[];
+  /** Content that should remain visible above the tiles while the stage is pinned. */
+  header?: React.ReactNode;
   /** Tiles per row on desktop. Phones use half this (min 2). */
   columns?: number;
   /** Total scroll track height. The stage stays pinned for track height - 100vh. */
@@ -19,8 +21,12 @@ const EASE = cubicBezier(0.16, 1, 0.3, 1);
 
 // Assembly occupies the middle of the pinned range, leaving a dwell at the
 // start (held scattered) and at the end (held assembled) before unpinning.
+// Assembly finishes at the halfway point of the pinned range. The second half
+// is deliberate headroom: the assembled mosaic holds there while the About
+// section climbs up over it, so the tiles are never still moving while being
+// covered. See the -100vh pull-up on #about-section.
 const ASSEMBLE_START = 0.18;
-const ASSEMBLE_END = 0.85;
+const ASSEMBLE_END = 0.5;
 
 /**
  * Deterministic pseudo-random scatter per tile, so the "flying in" start state
@@ -83,8 +89,9 @@ const Tile: React.FC<TileProps> = ({ image, index, total, progress }) => {
  */
 const ImageMosaic: React.FC<ImageMosaicProps> = ({
   images,
+  header,
   columns = 4,
-  trackHeight = '260vh',
+  trackHeight = '240vh',
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
 
@@ -110,12 +117,22 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
         sx={{
           position: 'sticky',
           top: 0,
-          height: '100vh',
+          height: '100svh',
+          boxSizing: 'border-box',
+          pt: { xs: 9, md: 11 },
+          pb: { xs: 3, md: 4 },
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          overflow: 'hidden',
         }}
       >
+        {header && (
+          <Box sx={{ width: '100%', flex: '0 0 auto', position: 'relative', zIndex: 2 }}>
+            {header}
+          </Box>
+        )}
+
         <Box
           sx={{
             display: 'grid',
@@ -126,6 +143,7 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
             gap: 0,
             width: '100%',
             maxWidth: { xs: maxWidthMobile, sm: maxWidthDesktop },
+            my: 'auto',
             perspective: '1200px',
           }}
         >

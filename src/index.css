@@ -6,9 +6,9 @@
   /* Custom properties for colors */
   --background-color: #EAE5D7;
   --surface-color: #ffffff;
-  --border-color: rgba(62, 78, 80, 0.18);
-  --text-color: #333333;
-  --text-secondary-color: #666666;
+  --border-color: rgba(72, 48, 48, 0.18);
+  --text-color: #483030;
+  --text-secondary-color: #786060;
   --accent-color: #96BBBB;
 }
 

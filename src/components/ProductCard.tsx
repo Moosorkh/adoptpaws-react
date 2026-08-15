@@ -18,7 +18,7 @@ import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 interface ProductCardProps {
   product: Product;
-  onAuthRequired?: () => void;
+  onAuthRequired?: (product?: Product) => void;
   initialFavorite?: { id: string, product_id: string } | null;
   onFavoriteChange?: () => void;
   index?: number;
@@ -48,7 +48,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const handleAdopt = () => {
     if (!isAuthenticated) {
       if (onAuthRequired) {
-        onAuthRequired();
+        onAuthRequired(product);
       } else {
         alert('Please log in to adopt a pet');
       }
@@ -113,12 +113,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <motion.div
+    <Box
+      component={motion.div}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.5, delay: (index % 6) * 0.08, ease: [0.16, 1, 0.3, 1] }}
-      style={{ flex: '1 1 calc(33% - 20px)', minWidth: 280, maxWidth: 320 }}
+      sx={{
+        display: 'flex',
+        flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', lg: '1 1 calc(33.333% - 8px)' },
+        minWidth: { xs: '100%', sm: 280 },
+        maxWidth: 'none',
+      }}
     >
       <Card
         elevation={0}
@@ -132,20 +138,29 @@ const ProductCard: React.FC<ProductCardProps> = ({
           border: '1px solid',
           borderColor: isHovered ? 'text.primary' : 'divider',
           bgcolor: 'background.paper',
-          position: 'relative'
+          position: 'relative',
+          width: '100%',
         }}
       >
-        {/* Image sits in a fixed mask so it can zoom without resizing the card */}
-        <Box sx={{ position: 'relative', overflow: 'hidden', height: 220 }}>
+        {/* Image sits in a stable mask so it can zoom without resizing the card */}
+        <Box
+          sx={{
+            position: 'relative',
+            overflow: 'hidden',
+            height: { xs: 280, md: 320 },
+          }}
+        >
           <CardMedia
             component="img"
-            height="220"
             image={product.imageUrl}
             alt={product.name}
             sx={{
-              height: 220,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center 38%',
               transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease',
-              transform: isHovered ? 'scale(1.08)' : 'scale(1.02)',
+              transform: isHovered ? 'scale(1.04)' : 'scale(1)',
               filter: isHovered ? 'grayscale(0%)' : 'grayscale(20%)',
             }}
           />
@@ -274,7 +289,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </Box>
         </CardContent>
       </Card>
-    </motion.div>
+    </Box>
   );
 };
 

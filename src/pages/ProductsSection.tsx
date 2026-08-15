@@ -13,13 +13,11 @@ import {
   List,
   InputBase,
   IconButton,
-  Chip,
   Collapse,
   Alert,
   AlertTitle,
   LinearProgress,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   SelectChangeEvent,
@@ -33,12 +31,9 @@ import {
   Visibility,
   Pets,
   Search,
-  FilterList,
   Clear,
   Favorite,
   CheckCircle,
-  KeyboardArrowDown,
-  KeyboardArrowUp
 } from '@mui/icons-material';
 import ProductCard from '../components/ProductCard';
 import CartItem from '../components/CartItem';
@@ -64,16 +59,16 @@ interface Category {
 
 const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList }) => {
   const API_URL = getApiBaseUrl();
-  const { cart, clearCart, totalItems, totalPrice } = useCart();
+  const { cart, addToCart, clearCart, totalItems, totalPrice } = useCart();
   const { isAuthenticated, token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const [pendingGuestProduct, setPendingGuestProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('');
   const [adoptionProgress, setAdoptionProgress] = useState(0);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -156,12 +151,29 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
     clearCart();
   };
 
+  const handleAuthRequired = (product?: Product) => {
+    setPendingGuestProduct(product || null);
+    setAuthDialogOpen(true);
+  };
+
+  const handleCloseAuthDialog = () => {
+    setAuthDialogOpen(false);
+    setPendingGuestProduct(null);
+  };
+
+  const handleContinueAsGuest = () => {
+    if (pendingGuestProduct) {
+      addToCart(pendingGuestProduct);
+    }
+    handleCloseAuthDialog();
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     
     // Check authentication
     if (!isAuthenticated) {
-      setAuthDialogOpen(true);
+      handleAuthRequired();
       return;
     }
     
@@ -206,7 +218,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
   return (
     <Fade in={true} timeout={800}>
       <Box>
-      <Box id="products-section" sx={{ mb: 8, mt: 2 }}>
+      <Box id="products-section" sx={{ mb: 8, mt: 2, px: { xs: 2, md: 6 } }}>
         {/* Header Section */}
         <Typography
           variant="h2"
@@ -252,134 +264,111 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
 
         {!loading && !error && (
           <>
-        {/* Search and Filter Bar */}
-        <Paper 
-          elevation={1}
-          sx={{ 
-            mb: 4, 
-            p: 2, 
-            borderRadius: 0,
-            bgcolor: '#f8f8f8',
-            mx: 'auto',
-            maxWidth: 1200
+        {/* Inline filter band inspired by Hot Lab's projects index. */}
+        <Box
+          sx={{
+            mb: 1.5,
+            mx: { xs: -2, md: -6 },
+            px: { xs: 2, md: 6 },
+            py: { xs: 3, md: 5 },
+            bgcolor: '#ffffff',
+            borderTop: '1px solid',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
           }}
         >
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: 'center', 
-            gap: 2,
-            mb: showFilters ? 2 : 0
-          }}>
-            {/* Search Input */}
-            <Paper
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.35fr) repeat(2, minmax(180px, 0.8fr))' },
+              gap: { xs: 3, md: 4 },
+              maxWidth: 1180,
+              mx: 'auto',
+            }}
+          >
+            <Box
               component="form"
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                px: 2,
-                py: 0.5,
-                flex: 1,
-                borderRadius: 0,
-                border: '1px solid #e0e0e0'
-              }}
+              onSubmit={(event: React.FormEvent) => event.preventDefault()}
+              sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid', borderColor: 'text.primary' }}
             >
               <InputBase
-                placeholder="Search for pets..."
+                inputProps={{ 'aria-label': 'Search pets' }}
+                placeholder="Search pets"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                sx={{ ml: 1, flex: 1 }}
+                sx={{ flex: 1, px: 1, py: 1, fontSize: '0.82rem' }}
               />
               {searchQuery && (
-                <IconButton 
-                  size="small" 
-                  onClick={() => setSearchQuery('')}
-                  sx={{ mr: 0.5 }}
-                >
-                  <Clear fontSize="small" />
+                <IconButton size="small" aria-label="Clear search" onClick={() => setSearchQuery('')}>
+                  <Clear sx={{ fontSize: 17 }} />
                 </IconButton>
               )}
-              <Divider sx={{ height: 28, mx: 1 }} orientation="vertical" />
-              <IconButton type="submit" sx={{ p: 1 }}>
-                <Search />
-              </IconButton>
-            </Paper>
-            
-            {/* Sort and Filter Buttons */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button 
-                variant="outlined"
-                size="small"
-                startIcon={<FilterList />}
-                endIcon={showFilters ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-                onClick={() => setShowFilters(!showFilters)}
-                sx={{ 
-                  borderRadius: 0,
-                  borderColor: '#96BBBB',
-                  color: '#3E4E50',
-                  '&:hover': {
-                    borderColor: '#3E4E50'
-                  }
+              <Search sx={{ fontSize: 18, mx: 1, color: 'text.primary' }} />
+            </Box>
+
+            <FormControl variant="standard" fullWidth>
+              <Select
+                value={activeCategory}
+                onChange={(event: SelectChangeEvent) => setActiveCategory(event.target.value)}
+                aria-label="Pet type"
+                disableUnderline
+                sx={{
+                  px: 1,
+                  py: 0.25,
+                  borderBottom: '1px solid',
+                  borderColor: 'text.primary',
+                  fontSize: '0.82rem',
+                  '& .MuiSelect-select': { py: 1 },
+                  '& .MuiSelect-icon': { fontSize: 18 },
                 }}
               >
-                Filter
-              </Button>
-              
-              <FormControl size="small" variant="outlined" sx={{ minWidth: 120 }}>
-                <InputLabel>Sort By</InputLabel>
-                <Select
-                  value={sortBy}
-                  onChange={handleSortChange}
-                  label="Sort By"
-                  sx={{ borderRadius: 0 }}
-                >
-                  <MenuItem value="">None</MenuItem>
-                  <MenuItem value="price-asc">Price: Low to High</MenuItem>
-                  <MenuItem value="price-desc">Price: High to Low</MenuItem>
-                  <MenuItem value="name">Name</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
+                <MenuItem value="all">Pet Type</MenuItem>
+                {categories.filter((category) => category.slug !== 'all').map((category) => (
+                  <MenuItem key={category.id} value={category.slug}>{category.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl variant="standard" fullWidth>
+              <Select
+                value={sortBy}
+                onChange={handleSortChange}
+                displayEmpty
+                aria-label="Sort pets"
+                disableUnderline
+                renderValue={(value) => value ? ({
+                  'price-asc': 'Fee: Low to High',
+                  'price-desc': 'Fee: High to Low',
+                  name: 'Name',
+                }[value] || value) : 'Sort By'}
+                sx={{
+                  px: 1,
+                  py: 0.25,
+                  borderBottom: '1px solid',
+                  borderColor: 'text.primary',
+                  fontSize: '0.82rem',
+                  '& .MuiSelect-select': { py: 1 },
+                  '& .MuiSelect-icon': { fontSize: 18 },
+                }}
+              >
+                <MenuItem value="">Default</MenuItem>
+                <MenuItem value="price-asc">Fee: Low to High</MenuItem>
+                <MenuItem value="price-desc">Fee: High to Low</MenuItem>
+                <MenuItem value="name">Name</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
-          
-          {/* Expandable Filter Options */}
-          <Collapse in={showFilters}>
-            <Box sx={{ 
-              mt: 2, 
-              pt: 2, 
-              borderTop: '1px solid #e0e0e0',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 1
-            }}>
-              <Typography variant="subtitle2" sx={{ mr: 2, py: 1 }}>
-                Pet Type:
-              </Typography>
-              {categories.map((category) => (
-                <Chip 
-                  key={category.id}
-                  label={category.name}
-                  clickable
-                  color={activeCategory === category.slug ? 'primary' : 'default'}
-                  onClick={() => setActiveCategory(category.slug)}
-                  sx={{ 
-                    bgcolor: activeCategory === category.slug ? '#96BBBB' : undefined,
-                    color: activeCategory === category.slug ? 'white' : undefined
-                  }}
-                />
-              ))}
-            </Box>
-          </Collapse>
-        </Paper>
+        </Box>
         
         {/* Pet Listings */}
-        <Box sx={{ position: 'relative' }}>
+        <Box sx={{ position: 'relative', mx: { xs: -2, md: -6 } }}>
           {/* Show count of filtered results */}
           {searchQuery || activeCategory !== 'all' || sortBy ? (
             <Typography 
               variant="body2" 
               sx={{ 
-                mb: 2, 
+                mb: 2,
+                px: { xs: 2, md: 6 },
                 color: 'text.secondary',
                 textAlign: 'center'
               }}
@@ -417,14 +406,14 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               </Button>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', mb: 8 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, md: 1.5 }, alignItems: 'stretch', mb: 8 }}>
               {sortedProducts.map((product, idx) => {
                 const productFavorite = favorites.find(fav => fav.product_id === product.id);
                 return (
                   <ProductCard
                     key={product.id}
                     product={product}
-                    onAuthRequired={() => setAuthDialogOpen(true)}
+                    onAuthRequired={handleAuthRequired}
                     initialFavorite={productFavorite || null}
                     onFavoriteChange={fetchFavorites}
                     index={idx}
@@ -577,7 +566,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
               borderRadius: 0,
               bgcolor: 'rgba(150, 187, 187, 0.15)',
               border: '1px dashed #96BBBB',
-              maxWidth: 1000,
+              maxWidth: 'none',
               mx: 'auto',
               textAlign: 'center'
             }}
@@ -613,7 +602,7 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
             p: 0, 
             borderRadius: 0,
             mb: 5,
-            maxWidth: 1000,
+            maxWidth: 'none',
             mx: 'auto',
             overflow: 'hidden'
           }}
@@ -807,7 +796,8 @@ const ProductsSection: React.FC<ProductsSectionProps> = ({ onOpenShoppingList })
       {/* Auth Dialog */}
       <AuthDialog 
         open={authDialogOpen} 
-        onClose={() => setAuthDialogOpen(false)} 
+        onClose={handleCloseAuthDialog}
+        onContinueAsGuest={pendingGuestProduct ? handleContinueAsGuest : undefined}
       />
       </Box>
     </Fade>

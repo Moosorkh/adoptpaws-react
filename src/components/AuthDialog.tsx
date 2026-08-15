@@ -18,9 +18,15 @@ interface AuthDialogProps {
   open: boolean;
   onClose: () => void;
   defaultTab?: 'login' | 'register';
+  onContinueAsGuest?: () => void;
 }
 
-const AuthDialog: React.FC<AuthDialogProps> = ({ open, onClose, defaultTab = 'login' }) => {
+const AuthDialog: React.FC<AuthDialogProps> = ({
+  open,
+  onClose,
+  defaultTab = 'login',
+  onContinueAsGuest
+}) => {
   const [tab, setTab] = useState<'login' | 'register'>(defaultTab);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -135,6 +141,24 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ open, onClose, defaultTab = 'lo
             >
               {loading ? <CircularProgress size={24} /> : 'Login'}
             </Button>
+            {onContinueAsGuest && (
+              <Box sx={{ mb: 2 }}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  fullWidth
+                  size="large"
+                  disabled={loading}
+                  onClick={onContinueAsGuest}
+                  sx={{ borderRadius: 0 }}
+                >
+                  Continue as guest
+                </Button>
+                <Typography variant="caption" color="text.secondary" align="center" sx={{ display: 'block', mt: 1 }}>
+                  Add this pet to your cart now. You can sign in before checkout.
+                </Typography>
+              </Box>
+            )}
             <Typography variant="body2" color="text.secondary" align="center">
               Don't have an account?{' '}
               <Button onClick={() => setTab('register')} size="small">
@@ -194,6 +218,24 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ open, onClose, defaultTab = 'lo
             >
               {loading ? <CircularProgress size={24} /> : 'Register'}
             </Button>
+            {onContinueAsGuest && (
+              <Box sx={{ mb: 2 }}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  fullWidth
+                  size="large"
+                  disabled={loading}
+                  onClick={onContinueAsGuest}
+                  sx={{ borderRadius: 0 }}
+                >
+                  Continue as guest
+                </Button>
+                <Typography variant="caption" color="text.secondary" align="center" sx={{ display: 'block', mt: 1 }}>
+                  Add this pet to your cart now. You can sign in before checkout.
+                </Typography>
+              </Box>
+            )}
             <Typography variant="body2" color="text.secondary" align="center">
               Already have an account?{' '}
               <Button onClick={() => setTab('login')} size="small">
