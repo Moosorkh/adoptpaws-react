@@ -15,6 +15,7 @@ import {
 } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
 import { scrollToSection } from '../utils/helpers';
+import PaperCurlOverlay from './PaperCurlOverlay';
 
 const steps = [
   {
@@ -58,7 +59,11 @@ const entryRanges = [
 
 interface ProcessCardProps {
   active: boolean;
+  hoverEnabled: boolean;
   index: number;
+  onHoverEnd: () => void;
+  onHoverStart: () => void;
+  peeled: boolean;
   progress: MotionValue<number>;
   reducedMotion: boolean | null;
   revealed: boolean;
@@ -67,7 +72,11 @@ interface ProcessCardProps {
 
 const ProcessCard: React.FC<ProcessCardProps> = ({
   active,
+  hoverEnabled,
   index,
+  onHoverEnd,
+  onHoverStart,
+  peeled,
   progress,
   reducedMotion,
   revealed,
@@ -80,6 +89,9 @@ const ProcessCard: React.FC<ProcessCardProps> = ({
   const y = useTransform(progress, [start, end], index === 0 ? ['0vh', '0vh'] : ['102vh', settledY]);
   const rotate = useTransform(progress, [start, end], [index === 0 ? settledRotations[index] : 9, settledRotations[index]]);
   const scale = useTransform(progress, [start, end], [index === 0 ? 1 : 0.92, 1]);
+  const paperSurfaceRef = useRef<HTMLDivElement>(null);
+  const [curlRendering, setCurlRendering] = useState(false);
+  const curlInProgress = peeled || curlRendering;
 
   return (
     <Box
@@ -87,6 +99,10 @@ const ProcessCard: React.FC<ProcessCardProps> = ({
       aria-current={active ? 'step' : undefined}
       aria-label={`Step ${step.number}: ${step.title}`}
       aria-hidden={!reducedMotion && !revealed ? true : undefined}
+      onHoverStart={() => {
+        if (hoverEnabled) onHoverStart();
+      }}
+      onHoverEnd={onHoverEnd}
       style={reducedMotion ? {
         x: settledX,
         y: settledY,
@@ -101,15 +117,8 @@ const ProcessCard: React.FC<ProcessCardProps> = ({
         width: { xs: '84vw', sm: '58vw', md: 'min(31vw, 440px)' },
         height: { xs: 'min(61vh, 560px)', md: 'min(72vh, 650px)' },
         minHeight: { xs: 410, md: 470 },
-        bgcolor: '#F8F6EF',
-        border: '1px solid rgba(72, 48, 48, 0.16)',
-        boxShadow: active
-          ? '0 22px 55px rgba(72, 48, 48, 0.2)'
-          : '0 14px 34px rgba(72, 48, 48, 0.12)',
-        display: 'flex',
-        flexDirection: 'column',
         overflow: 'visible',
-        transition: 'box-shadow 0.3s ease',
+        pointerEvents: curlInProgress || (!reducedMotion && !revealed) ? 'none' : 'auto',
         '@media (max-height: 700px)': {
           top: '3%',
           width: { xs: '76vw', md: 'min(31vw, 380px)' },
@@ -121,6 +130,7 @@ const ProcessCard: React.FC<ProcessCardProps> = ({
       <Box
         sx={{
           position: 'absolute',
+          zIndex: 4,
           top: -15,
           left: '50%',
           transform: 'translateX(-50%)',
@@ -140,6 +150,26 @@ const ProcessCard: React.FC<ProcessCardProps> = ({
         Process
       </Box>
 
+      <Box
+        ref={paperSurfaceRef}
+        sx={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          bgcolor: '#F8F6EF',
+          border: '1px solid rgba(72, 48, 48, 0.16)',
+          boxShadow: peeled
+            ? '0 24px 60px rgba(72, 48, 48, 0.2)'
+            : active
+              ? '0 22px 55px rgba(72, 48, 48, 0.2)'
+              : '0 14px 34px rgba(72, 48, 48, 0.12)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'visible',
+          opacity: curlRendering ? 0 : 1,
+          transition: 'box-shadow 0.3s ease',
+        }}
+      >
       <Box
         sx={{
           flex: 1,
@@ -241,6 +271,13 @@ const ProcessCard: React.FC<ProcessCardProps> = ({
           {step.icon}
         </Box>
       </Box>
+      </Box>
+
+      <PaperCurlOverlay
+        active={peeled && !reducedMotion}
+        sourceRef={paperSurfaceRef}
+        onRenderingChange={setCurlRendering}
+      />
     </Box>
   );
 };
@@ -358,6 +395,7 @@ const MobileProcessCard: React.FC<{ index: number; step: (typeof steps)[number] 
 const HowAdoptionWorks: React.FC = () => {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeStep, setActiveStep] = useState(0);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const reducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: trackRef,
@@ -365,12 +403,14 @@ const HowAdoptionWorks: React.FC = () => {
   });
 
   const blobRotate = useTransform(scrollYProgress, [0, 1], [-7, 7]);
+  const blobY = useTransform(scrollYProgress, [0, 1], ['-3vh', '3vh']);
   const titleX = useTransform(scrollYProgress, [0, 1], ['0vw', '-3vw']);
 
   useMotionValueEvent(scrollYProgress, 'change', (progress) => {
     if (reducedMotion) return;
     const nextStep = Math.min(steps.length - 1, Math.floor(progress * steps.length));
     setActiveStep((current) => current === nextStep ? current : nextStep);
+    setHoveredCard((current) => current !== null && current < nextStep ? current : null);
   });
 
   const displayedStep = reducedMotion ? steps.length - 1 : activeStep;
@@ -406,7 +446,7 @@ const HowAdoptionWorks: React.FC = () => {
         <Box
           component={motion.div}
           aria-hidden="true"
-          style={reducedMotion ? { rotate: -4 } : { rotate: blobRotate }}
+          style={reducedMotion ? { rotate: -4 } : { rotate: blobRotate, y: blobY }}
           sx={{
             position: 'absolute',
             zIndex: -1,
@@ -469,6 +509,12 @@ const HowAdoptionWorks: React.FC = () => {
             active={index === displayedStep}
             revealed={index <= displayedStep}
             reducedMotion={reducedMotion}
+            hoverEnabled={!reducedMotion && index < steps.length - 1 && displayedStep > index}
+            peeled={!reducedMotion && hoveredCard === index - 1 && index <= displayedStep}
+            onHoverStart={() => setHoveredCard(index)}
+            onHoverEnd={() => {
+              setHoveredCard((current) => current === index ? null : current);
+            }}
           />
         ))}
 

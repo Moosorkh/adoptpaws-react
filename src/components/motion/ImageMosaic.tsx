@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
-import { motion, useScroll, useTransform, cubicBezier, MotionValue } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform, cubicBezier, MotionValue } from 'framer-motion';
 
 interface MosaicImage {
   src: string;
@@ -103,6 +103,7 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const track = trackRef.current;
@@ -149,6 +150,8 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
     target: trackRef,
     offset: ['start start', 'end end'],
   });
+  const videoY = useTransform(scrollYProgress, [0, 1], ['-4%', '4%']);
+  const videoScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.025]);
 
   const colsMobile = Math.max(2, Math.round(columns / 2));
   const rowsMobile = Math.ceil(images.length / colsMobile);
@@ -187,7 +190,7 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
         }}
       >
         <Box
-          component="video"
+          component={motion.video}
           ref={videoRef}
           src="/images/HIW-video.mp4"
           muted
@@ -196,14 +199,17 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
           preload="metadata"
           aria-hidden="true"
           tabIndex={-1}
+          style={reducedMotion ? undefined : { y: videoY, scale: videoScale }}
           sx={{
             position: 'absolute',
             zIndex: 0,
-            inset: 0,
+            top: '-5%',
+            left: 0,
             width: '100%',
-            height: '100%',
+            height: '110%',
             objectFit: 'cover',
             pointerEvents: 'none',
+            willChange: reducedMotion ? 'auto' : 'transform',
           }}
         />
 
