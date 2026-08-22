@@ -50,7 +50,33 @@ const Footer: React.FC = () => {
               fontSize: { xs: '2.75rem', sm: '4rem', md: '5.5rem' },
             }}
           >
-            AdoptPaws
+            Ad
+            <Box
+              component="span"
+              sx={{
+                position: 'relative',
+                display: 'inline-block',
+                width: '0.86em',
+                height: '0.88em',
+                mx: '0.025em',
+                transform: 'translateY(0.055em)',
+              }}
+            >
+              <Box
+                component="img"
+                src="/images/adoptpaws-paw-o.svg"
+                alt="O"
+                sx={{
+                  position: 'absolute',
+                  width: '1.25em',
+                  height: '1.25em',
+                  left: '-0.19em',
+                  top: '-0.16em',
+                  display: 'block',
+                }}
+              />
+            </Box>
+            ptPaws
           </Typography>
         </Box>
 

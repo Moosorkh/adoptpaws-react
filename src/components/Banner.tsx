@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Box, Typography, Chip } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import RevealText from './motion/RevealText';
 import ImageMosaic from './motion/ImageMosaic';
@@ -22,8 +22,6 @@ const MOSAIC_IMAGES = [
   { src: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&q=80', alt: 'Dog closeup' },
 ];
 
-const TAGS = ['ADOPTION', 'FOSTERING', 'RESCUE STORIES', 'COMMUNITY'];
-
 const Banner: React.FC<BannerProps> = () => {
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +34,6 @@ const Banner: React.FC<BannerProps> = () => {
   const headlineY = useTransform(scrollYProgress, [0, 0.5], [0, -70]);
   const headlineScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.92]);
   const subtextOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
-  const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
   // Gentle parallax on the hero photo as the hero scrolls away.
   const heroImageY = useTransform(scrollYProgress, [0, 1], ['0%', '-14%']);
 
@@ -148,53 +145,11 @@ const Banner: React.FC<BannerProps> = () => {
 
       {/* The controls share the pinned stage with the photos, so the context
           remains visible throughout the mosaic assembly. */}
-      <Box sx={{ mt: { xs: 2, md: 4 } }}>
+      <Box>
         <ImageMosaic
           images={MOSAIC_IMAGES}
           header={(
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                <RevealText delay={0.25}>
-                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                    {TAGS.map((tag) => (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        variant="outlined"
-                        sx={{
-                          borderColor: 'divider',
-                          color: 'text.secondary',
-                          borderRadius: 0,
-                          fontSize: '0.7rem',
-                          letterSpacing: '0.05em',
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </RevealText>
-
-                <Box
-                  component={motion.div}
-                  style={{ opacity: scrollHintOpacity }}
-                  sx={{
-                    display: { xs: 'none', md: 'block' },
-                    color: 'text.secondary',
-                    fontSize: '0.7rem',
-                    letterSpacing: '0.1em',
-                    fontFamily: 'monospace',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <motion.span
-                    animate={{ y: [0, 4, 0] }}
-                    transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-                    style={{ display: 'inline-block' }}
-                  >
-                    [ SCROLL DOWN ]
-                  </motion.span>
-                </Box>
-              </Box>
-
               <RevealText delay={0.35}>
                 <Box
                   component={motion.div}
@@ -204,7 +159,6 @@ const Banner: React.FC<BannerProps> = () => {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 1,
-                    mt: 2,
                     cursor: 'pointer',
                     color: 'text.primary',
                     fontWeight: 500,

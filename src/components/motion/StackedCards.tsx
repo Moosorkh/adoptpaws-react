@@ -5,6 +5,8 @@ interface StackedCardsProps {
   children: React.ReactNode;
   /** Child indexes that provide their own long scroll track and sticky stage. */
   flowItems?: number[];
+  /** Extra scroll distance inserted after selected panels before the next pulls up. */
+  holdAfter?: Record<number, number | string>;
   /** Visible sliver of each card left behind as the next slides over it. */
   peek?: number;
   /** Offset of the first card from the top of the viewport (clears the header). */
@@ -32,6 +34,7 @@ interface StackedCardsProps {
 const StackedCards: React.FC<StackedCardsProps> = ({
   children,
   flowItems = [],
+  holdAfter = {},
   peek = 20,
   topOffset = 88,
   cardHeight = 800,
@@ -52,32 +55,44 @@ const StackedCards: React.FC<StackedCardsProps> = ({
 
   return (
     <Box>
-      {items.map((child, i) => (
-        flowItems.includes(i) ? (
-          <React.Fragment key={i}>{child}</React.Fragment>
-        ) : (
-          <Box
-            key={i}
-            sx={{
-              position: 'sticky',
-              top: `${topOffset + i * peek}px`,
-              height: cardHeight,
-              // Panels must be opaque to occlude the card pinned beneath them.
-              bgcolor: 'background.default',
-              // Leading edge + upward shadow so each card reads as a distinct
-              // layer sliding over the last, rather than cream on cream.
-              borderTop: '1px solid',
-              borderColor: 'divider',
-              boxShadow: i === 0 ? 'none' : '0 -10px 28px rgba(72, 48, 48, 0.10)',
-              display: 'flex',
-              alignItems: 'stretch',
-              overflow: 'hidden',
-            }}
-          >
-            <Box sx={{ width: '100%', height: '100%' }}>{child}</Box>
-          </Box>
-        )
-      ))}
+      {items.map((child, i) => {
+        const hold = holdAfter[i];
+
+        return (
+          <React.Fragment key={i}>
+            {flowItems.includes(i) ? (
+              child
+            ) : (
+              <Box
+                sx={{
+                  position: 'sticky',
+                  top: `${topOffset + i * peek}px`,
+                  height: cardHeight,
+                  // Panels must be opaque to occlude the card pinned beneath them.
+                  bgcolor: 'background.default',
+                  // Leading edge + upward shadow so each card reads as a distinct
+                  // layer sliding over the last, rather than cream on cream.
+                  borderTop: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: i === 0 ? 'none' : '0 -10px 28px rgba(72, 48, 48, 0.10)',
+                  display: 'flex',
+                  alignItems: 'stretch',
+                  overflow: 'hidden',
+                }}
+              >
+                <Box sx={{ width: '100%', height: '100%' }}>{child}</Box>
+              </Box>
+            )}
+
+            {hold != null && (
+              <Box
+                aria-hidden="true"
+                sx={{ height: typeof hold === 'number' ? `${hold}px` : hold }}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
 
       {/* Real spacer, not padding: a sticky element is contained by its
           parent's *content* box, so padding-bottom would not extend the pinned
