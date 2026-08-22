@@ -233,20 +233,28 @@ const Header: React.FC<HeaderProps> = ({ onOpenCart }) => {
               }}
             >
               Ad
-              <Box component="span" sx={{ position: 'relative', display: 'inline-block' }}>
-                o
-                {/* Slashed "o", echoing the reference wordmark's Ø */}
+              <Box
+                component="span"
+                sx={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '0.86em',
+                  height: '0.88em',
+                  mx: '0.025em',
+                  transform: 'translateY(0.055em)',
+                }}
+              >
                 <Box
-                  component="span"
+                  component="img"
+                  src="/images/adoptpaws-paw-o.svg"
+                  alt="O"
                   sx={{
                     position: 'absolute',
-                    left: '-0.12em',
-                    right: '-0.12em',
-                    top: '50%',
-                    height: '0.06em',
-                    bgcolor: 'text.primary',
-                    transform: 'rotate(-45deg)',
-                    transformOrigin: 'center',
+                    width: '1.25em',
+                    height: '1.25em',
+                    left: '-0.19em',
+                    top: '-0.16em',
+                    display: 'block',
                   }}
                 />
               </Box>

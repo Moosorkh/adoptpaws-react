@@ -23,8 +23,8 @@ import {
 import { api } from '../services/api';
 import RevealText from '../components/motion/RevealText';
 import MaskedWords from '../components/motion/MaskedWords';
-import StoryTimeline from '../components/motion/StoryTimeline';
-import TeamAccordion from '../components/TeamAccordion';
+import StoryTimeline, { StoryChapter } from '../components/motion/StoryTimeline';
+import TeamAccordion, { TeamMember } from '../components/TeamAccordion';
 import StackedCards from '../components/motion/StackedCards';
 import SineCarousel from '../components/motion/SineCarousel';
 
@@ -45,6 +45,47 @@ const FEATURE_IMAGES = [
   'https://images.unsplash.com/photo-1552053831-71594a27632d?w=700&q=80',
   'https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=700&q=80',
   'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=700&q=80',
+];
+
+// Keep the team visible when the content API is temporarily unavailable.
+// These entries mirror the public seed data and use bundled project images.
+const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
+  {
+    name: 'Dr. Sarah Chen',
+    role: 'Founder & Director',
+    bio: 'Animal lover and community advocate with 15 years of experience in animal welfare. Dr. Chen founded AdoptPaws with a mission to create lasting bonds between pets and families.',
+    photo: '/images/sara-chen.webp',
+  },
+  {
+    name: 'Michael Rodriguez',
+    role: 'Adoption Coordinator',
+    bio: 'Former veterinary assistant passionate about finding perfect matches for our pets. Michael brings expertise in animal behavior and family counseling to every adoption.',
+    photo: '/images/michael-rodriguez.webp',
+  },
+  {
+    name: 'Emily Watson',
+    role: 'Veterinary Care Manager',
+    bio: 'Licensed veterinary technician with a decade of experience. Emily ensures all our animals receive top-quality medical care and are healthy before adoption.',
+    photo: '/images/emily-watson.webp',
+  },
+  {
+    name: 'James Park',
+    role: 'Community Outreach Director',
+    bio: 'Dedicated to building partnerships and educating the community about responsible pet ownership. James organizes adoption events and volunteer programs.',
+    photo: '/images/james-park.webp',
+  },
+  {
+    name: 'Lisa Thompson',
+    role: 'Foster Program Manager',
+    bio: 'Coordinates our network of foster families who provide temporary homes for animals. Lisa has personally fostered over 100 animals in her career.',
+    photo: '/images/lisa-thompson.webp',
+  },
+  {
+    name: 'David Kim',
+    role: 'Operations Manager',
+    bio: 'Handles daily operations and facility management. David ensures our shelter runs smoothly and provides the best environment for our animals.',
+    photo: '/images/david-kim.webp',
+  },
 ];
 
 /** Small numbered eyebrow that replaces the old tab bar. */
@@ -77,21 +118,21 @@ const SectionLabel: React.FC<{ index: string; title: string }> = ({ index, title
 
 const AboutSection: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [historyTimeline, setHistoryTimeline] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(DEFAULT_TEAM_MEMBERS);
+  const [historyTimeline, setHistoryTimeline] = useState<StoryChapter[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [team, history] = await Promise.all([
-          api.getTeamMembers(),
-          api.getHistory()
-        ]);
-        setTeamMembers(team);
-        setHistoryTimeline(history);
-      } catch (error) {
-        console.error('Error fetching about data:', error);
-      }
+      await Promise.all([
+        api.getTeamMembers()
+          .then((team) => {
+            if (team.length) setTeamMembers(team);
+          })
+          .catch((error) => console.error('Error fetching team data:', error)),
+        api.getHistory()
+          .then((history) => setHistoryTimeline(history))
+          .catch((error) => console.error('Error fetching history data:', error)),
+      ]);
     };
 
     fetchData();
@@ -137,7 +178,11 @@ const AboutSection: React.FC = () => {
       <Box sx={{ width: '100%' }}>
         <Fade in={true} timeout={800}>
           <Box>
-            <StackedCards flowItems={[3]}>
+            <StackedCards
+              flowItems={[3]}
+              // Let each full panel settle before the next one slides over it.
+              holdAfter={{ 0: '70vh', 1: '70vh' }}
+            >
               {/* Main Content Section */}
               <Paper 
                 elevation={3} 
@@ -304,9 +349,26 @@ const AboutSection: React.FC = () => {
               </Paper>
             
               {/* Our Team */}
-              <Box sx={{ px: { xs: 2, md: 6 } }}>
+              <Box
+                sx={{
+                  px: { xs: 2, md: 6 },
+                  py: 0,
+                  height: { md: '100%' },
+                  display: { md: 'flex' },
+                  flexDirection: { md: 'column' },
+                }}
+              >
                 <SectionLabel index="01" title="Our Team" />
-                <TeamAccordion members={teamMembers} />
+                <Box
+                  sx={{
+                    flex: { md: 1 },
+                    minHeight: 0,
+                    display: { md: 'flex' },
+                    alignItems: { md: 'center' },
+                  }}
+                >
+                  <TeamAccordion members={teamMembers} />
+                </Box>
               </Box>
               {/* Why Choose Us — embellished cards on an endless ticker */}
               <Box>
@@ -319,22 +381,33 @@ const AboutSection: React.FC = () => {
                       key={feature.title}
                       sx={{
                         width: 320,
-                        height: 380,
                         flexShrink: 0,
                         bgcolor: 'background.paper',
                         border: '1px solid',
                         borderColor: 'divider',
                         overflow: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
                       }}
                     >
-                      <Box sx={{ position: 'relative', height: 180, overflow: 'hidden' }}>
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          bgcolor: 'background.default',
+                        }}
+                      >
                         <Box
                           component="img"
                           src={FEATURE_IMAGES[index % FEATURE_IMAGES.length]}
                           alt=""
-                          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          sx={{
+                            display: 'block',
+                            width: '100%',
+                            height: 'auto',
+                            maxHeight: 360,
+                            objectFit: 'contain',
+                          }}
                         />
                         <Box
                           sx={{
@@ -357,21 +430,6 @@ const AboutSection: React.FC = () => {
                         >
                           {feature.icon}
                         </Avatar>
-                        <Typography
-                          aria-hidden="true"
-                          sx={{
-                            position: 'absolute',
-                            right: 12,
-                            bottom: 4,
-                            fontWeight: 700,
-                            fontSize: '2.6rem',
-                            lineHeight: 1,
-                            color: '#EAE5D7',
-                            opacity: 0.9,
-                          }}
-                        >
-                          .0{index + 1}
-                        </Typography>
                       </Box>
 
                       <Box sx={{ p: 3 }}>

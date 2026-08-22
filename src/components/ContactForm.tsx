@@ -16,7 +16,11 @@ import { Person, Email, Message, Send } from '@mui/icons-material';
 import { api } from '../services/api';
 import RevealText from './motion/RevealText';
 
-const ContactForm: React.FC = () => {
+interface ContactFormProps {
+  embedded?: boolean;
+}
+
+const ContactForm: React.FC<ContactFormProps> = ({ embedded = false }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -130,26 +134,28 @@ const ContactForm: React.FC = () => {
           elevation={0}
           sx={{
             borderRadius: 0,
-            border: '1px solid',
+            border: embedded ? 0 : '1px solid',
             borderColor: 'divider',
             overflow: 'hidden',
-            maxWidth: isMobile ? '100%' : 600,
+            maxWidth: embedded ? 'none' : (isMobile ? '100%' : 600),
             mx: 'auto',
           }}
         >
-          <Box sx={{
-            bgcolor: '#96BBBB',
-            color: 'white',
-            p: 3,
-            textAlign: 'center'
-          }}>
-            <Typography variant="h5" fontWeight="bold">
-              Get In Touch
-            </Typography>
-            <Typography variant="body2">
-              We'd love to hear from you!
-            </Typography>
-          </Box>
+          {!embedded && (
+            <Box sx={{
+              bgcolor: '#96BBBB',
+              color: 'white',
+              p: 3,
+              textAlign: 'center'
+            }}>
+              <Typography variant="h5" fontWeight="bold">
+                Get In Touch
+              </Typography>
+              <Typography variant="body2">
+                We'd love to hear from you!
+              </Typography>
+            </Box>
+          )}
 
           <Box 
             component="form" 
@@ -158,7 +164,7 @@ const ContactForm: React.FC = () => {
               display: 'flex', 
               flexDirection: 'column',
               gap: 3,
-              p: 4,
+              p: embedded ? { xs: 2.5, sm: 4 } : 4,
               bgcolor: '#f8f8f8',
             }}
           >

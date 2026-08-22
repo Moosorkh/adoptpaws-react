@@ -1,0 +1,77 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 1254 1254"
+  role="img"
+  aria-labelledby="title description"
+  shape-rendering="geometricPrecision"
+>
+  <title id="title">Paw-shaped letter O</title>
+  <desc id="description">An orange oval letter O with four separated teal paw toes above it.</desc>
+
+  <defs>
+    <linearGradient id="toeGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0BA6AE" />
+      <stop offset="1" stop-color="#0D9FA7" />
+    </linearGradient>
+
+    <linearGradient id="oGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF7A1F" />
+      <stop offset="1" stop-color="#F57325" />
+    </linearGradient>
+  </defs>
+
+  <!-- Four separated paw toes, positioned to match the reference -->
+  <ellipse
+    cx="325.8"
+    cy="464"
+    rx="84.15"
+    ry="107.97"
+    transform="rotate(-14.62 325.8 464)"
+    fill="url(#toeGradient)"
+  />
+
+  <ellipse
+    cx="502.73"
+    cy="314"
+    rx="93.32"
+    ry="125.98"
+    transform="rotate(-5.51 502.73 314)"
+    fill="url(#toeGradient)"
+  />
+
+  <ellipse
+    cx="748.3"
+    cy="313.87"
+    rx="91.95"
+    ry="126.08"
+    transform="rotate(6.05 748.3 313.87)"
+    fill="url(#toeGradient)"
+  />
+
+  <ellipse
+    cx="924.5"
+    cy="464.14"
+    rx="82.69"
+    ry="108.09"
+    transform="rotate(14.38 924.5 464.14)"
+    fill="url(#toeGradient)"
+  />
+
+  <!-- Oval O: intentionally wider outer ring and taller inner counter -->
+  <path
+    fill="url(#oGradient)"
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="
+      M 624.5 465
+      A 266 289.5 0 1 1 624.5 1044
+      A 266 289.5 0 1 1 624.5 465
+      Z
+
+      M 624.5 571
+      A 139 183.5 0 1 0 624.5 938
+      A 139 183.5 0 1 0 624.5 571
+      Z
+    "
+  />
+</svg>

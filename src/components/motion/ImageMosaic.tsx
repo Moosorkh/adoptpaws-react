@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
 import { motion, useScroll, useTransform, cubicBezier, MotionValue } from 'framer-motion';
 
@@ -13,7 +13,7 @@ interface ImageMosaicProps {
   header?: React.ReactNode;
   /** Tiles per row on desktop. Phones use half this (min 2). */
   columns?: number;
-  /** Total scroll track height. The stage stays pinned for track height - 100vh. */
+  /** Desktop scroll track height. Phones retain the shorter 240vh track. */
   trackHeight?: string;
 }
 
@@ -21,10 +21,10 @@ const EASE = cubicBezier(0.16, 1, 0.3, 1);
 
 // Assembly occupies the middle of the pinned range, leaving a dwell at the
 // start (held scattered) and at the end (held assembled) before unpinning.
-// Assembly finishes at the halfway point of the pinned range. The second half
-// is deliberate headroom: the assembled mosaic holds there while the About
-// section climbs up over it, so the tiles are never still moving while being
-// covered. See the -100vh pull-up on #about-section.
+// Assembly finishes at the halfway point of the pinned range. The extended
+// desktop track gives the completed grid a deliberate hold before the About
+// section climbs over it, so the next section does not arrive immediately.
+// See the -100vh pull-up on #about-section.
 const ASSEMBLE_START = 0.18;
 const ASSEMBLE_END = 0.5;
 
@@ -99,9 +99,49 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
   images,
   header,
   columns = 4,
-  trackHeight = '240vh',
+  trackHeight = '340vh',
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    const video = videoRef.current;
+    if (!track || !video) return;
+
+    let sectionIsVisible = false;
+
+    const syncPlayback = () => {
+      if (sectionIsVisible && !document.hidden) {
+        void video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    };
+
+    if (!('IntersectionObserver' in window)) {
+      sectionIsVisible = true;
+      syncPlayback();
+      return () => video.pause();
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        sectionIsVisible = entry.isIntersecting;
+        syncPlayback();
+      },
+      { threshold: 0.01 },
+    );
+
+    observer.observe(track);
+    document.addEventListener('visibilitychange', syncPlayback);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', syncPlayback);
+      video.pause();
+    };
+  }, []);
 
   // Progress runs 0 -> 1 across the pinned portion of the track: it stays at 0
   // while the block is still scrolling into view, so it arrives scattered.
@@ -120,11 +160,21 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
   const maxWidthDesktop = `${(maxH * columns) / rowsDesktop}vh`;
 
   return (
-    <Box ref={trackRef} sx={{ position: 'relative', height: trackHeight }}>
+    <Box
+      ref={trackRef}
+      sx={{
+        position: 'relative',
+        // Keep phones concise; desktop gets an extra scroll dwell after the
+        // tiles finish assembling before the next section starts pulling up.
+        height: { xs: '240vh', md: trackHeight },
+      }}
+    >
       <Box
         sx={{
           position: 'sticky',
           top: 0,
+          width: { xs: 'calc(100% + 32px)', md: 'calc(100% + 96px)' },
+          ml: { xs: -2, md: -6 },
           height: '100svh',
           boxSizing: 'border-box',
           pt: { xs: 9, md: 11 },
@@ -133,16 +183,61 @@ const ImageMosaic: React.FC<ImageMosaicProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           overflow: 'hidden',
+          isolation: 'isolate',
         }}
       >
+        <Box
+          component="video"
+          ref={videoRef}
+          src="/images/HIW-video.mp4"
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          tabIndex={-1}
+          sx={{
+            position: 'absolute',
+            zIndex: 0,
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            pointerEvents: 'none',
+          }}
+        />
+
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: 'absolute',
+            zIndex: 1,
+            inset: 0,
+            pointerEvents: 'none',
+            background:
+              'linear-gradient(to bottom, rgba(234,229,215,0.7) 0%, rgba(234,229,215,0.58) 45%, rgba(234,229,215,0.68) 100%)',
+          }}
+        />
+
         {header && (
-          <Box sx={{ width: '100%', flex: '0 0 auto', position: 'relative', zIndex: 2 }}>
+          <Box
+            sx={{
+              width: '100%',
+              flex: '0 0 auto',
+              position: 'relative',
+              zIndex: 3,
+              px: { xs: 2, md: 6 },
+              boxSizing: 'border-box',
+            }}
+          >
             {header}
           </Box>
         )}
 
         <Box
           sx={{
+            position: 'relative',
+            zIndex: 2,
             display: 'grid',
             gridTemplateColumns: {
               xs: `repeat(${colsMobile}, 1fr)`,

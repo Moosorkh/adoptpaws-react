@@ -98,7 +98,7 @@ const TeamAccordion: React.FC<TeamAccordionProps> = ({ members, cycleMs = 5000 }
 
   return (
     <Box
-      sx={{ display: 'flex', gap: '12px', width: '100%', height: 460, overflow: 'hidden' }}
+      sx={{ display: 'flex', gap: '12px', width: '100%', height: 560, overflow: 'hidden' }}
       onMouseLeave={() => setPaused(false)}
     >
       {members.map((m, i) => {
@@ -188,7 +188,7 @@ const TeamAccordion: React.FC<TeamAccordionProps> = ({ members, cycleMs = 5000 }
                 overflow: 'hidden',
                 // A near-square frame shows the full vertical composition of
                 // the 3:2 portraits and crops only their less important sides.
-                height: 250,
+                height: 300,
               }}
             >
               <Box

@@ -17,7 +17,8 @@ import {
   Step,
   StepLabel,
   CircularProgress,
-  List
+  List,
+  LinearProgress
 } from '@mui/material';
 import { 
   Close, 
@@ -26,7 +27,8 @@ import {
   ArrowForward,
   ArrowBack,
   Check,
-  PetsOutlined
+  PetsOutlined,
+  Favorite
 } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -54,6 +56,8 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
   const API_URL = getApiBaseUrl();
 
   const steps = ['Review Cart', 'Adoption Details', 'Confirmation'];
+  const petsNeededForPromo = Math.max(0, 3 - totalItems);
+  const showPromo = petsNeededForPromo > 0 && petsNeededForPromo < 3;
 
   const handleClearCart = () => {
     if (confirmClear) {
@@ -156,6 +160,39 @@ const ShoppingListModal: React.FC<ShoppingListModalProps> = ({ open, onClose }) 
               </Box>
             ) : (
               <Box>
+                {showPromo && (
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      mb: 2,
+                      borderRadius: 0,
+                      bgcolor: 'rgba(150, 187, 187, 0.15)',
+                      border: '1px dashed #96BBBB',
+                      textAlign: 'center'
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                      <Favorite sx={{ color: '#96BBBB', fontSize: 20 }} />
+                      <Typography variant="body2" fontWeight="medium">
+                        Adopt {petsNeededForPromo} more {petsNeededForPromo === 1 ? 'pet' : 'pets'} and receive a free adoption kit!
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={(totalItems / 3) * 100}
+                      aria-label="Free adoption kit progress"
+                      sx={{
+                        mt: 1.5,
+                        height: 7,
+                        borderRadius: 0,
+                        bgcolor: 'rgba(255,255,255,0.8)',
+                        '& .MuiLinearProgress-bar': { bgcolor: '#96BBBB' }
+                      }}
+                    />
+                  </Paper>
+                )}
+
                 <List sx={{ maxHeight: 400, overflow: 'auto', pb: 1 }}>
                   {cart.map((item) => (
                     <CartItem key={item.id} item={item} />

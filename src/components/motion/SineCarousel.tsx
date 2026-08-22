@@ -1,5 +1,6 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { Box } from '@mui/material';
+import { motion } from 'framer-motion';
 
 interface SineCarouselProps {
   /** Rendered repeatedly along the track. */
@@ -12,8 +13,6 @@ interface SineCarouselProps {
   baseScale?: number;
   /** Scale of a card at the focal point. */
   peakScale?: number;
-  /** How tightly the scale falls off either side of the focus, px. */
-  focusFalloff?: number;
   /** Amplitude of the vertical sine, px. */
   amplitude?: number;
   /** Wavelength of the vertical sine, px. */
@@ -32,7 +31,8 @@ interface SineCarouselProps {
  * Cards sit at even intervals along a horizontal track. Each one's vertical
  * position follows a sine wave layered on a constant slope — that combination
  * is what produces the diagonal cascade — while its scale peaks at a focal
- * point and falls away to a smaller resting size, giving the depth.
+ * point. Only that single selected card grows; every other card stays at the
+ * same resting scale.
  *
  * Grab and fling it and the track keeps travelling under friction, slot-machine
  * style; left alone it drifts slowly so the motion never stops. Transforms are
@@ -44,13 +44,12 @@ const SineCarousel: React.FC<SineCarouselProps> = ({
   repeat = 6,
   spacing = 150,
   baseScale = 0.62,
-  peakScale = 1,
-  focusFalloff = 420,
+  peakScale = 1.2,
   amplitude = 70,
   wavelength = 1400,
   slope = 0.17,
   autoSpeed = 0.35,
-  height = 620,
+  height = 680,
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -58,6 +57,8 @@ const SineCarousel: React.FC<SineCarouselProps> = ({
   const velocity = useRef(0);
   const dragging = useRef(false);
   const lastX = useRef(0);
+  const selectedRef = useRef(0);
+  const [selectedCard, setSelectedCard] = useState(0);
 
   const items = React.Children.toArray(children);
   const total = items.length * repeat;
@@ -65,23 +66,42 @@ const SineCarousel: React.FC<SineCarouselProps> = ({
 
   const layout = useCallback(() => {
     const half = trackLength / 2;
+    const positions: Array<{ t: number; y: number }> = [];
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
     for (let i = 0; i < total; i++) {
-      const el = cardRefs.current[i];
-      if (!el) continue;
       // Wrap each card's position into a band centred on zero, so cards
       // leaving one end reappear at the other — an endless track.
       let t = i * spacing + offset.current;
       t = ((((t + half) % trackLength) + trackLength) % trackLength) - half;
 
       const y = Math.sin((t / wavelength) * Math.PI * 2) * amplitude + t * slope;
-      const falloff = Math.exp(-(t * t) / (2 * focusFalloff * focusFalloff));
-      const scale = baseScale + (peakScale - baseScale) * falloff;
+      positions[i] = { t, y };
 
-      el.style.transform = `translate3d(${t}px, ${y}px, 0) scale(${scale})`;
-      // Nearer cards sit above their neighbours.
-      el.style.zIndex = String(Math.round(falloff * 100));
+      const distance = Math.abs(t);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
     }
-  }, [total, spacing, trackLength, wavelength, amplitude, slope, focusFalloff, baseScale, peakScale]);
+
+    for (let i = 0; i < total; i++) {
+      const el = cardRefs.current[i];
+      const position = positions[i];
+      if (!el || !position) continue;
+
+      // Position and selection animation live on separate layers, preventing
+      // the per-frame track transform from overriding Framer Motion's spring.
+      el.style.transform = `translate3d(${position.t}px, ${position.y}px, 0)`;
+      el.style.zIndex = i === closestIndex ? '1000' : '1';
+    }
+
+    if (selectedRef.current !== closestIndex) {
+      selectedRef.current = closestIndex;
+      setSelectedCard(closestIndex);
+    }
+  }, [total, spacing, trackLength, wavelength, amplitude, slope]);
 
   useEffect(() => {
     let frame = 0;
@@ -164,12 +184,40 @@ const SineCarousel: React.FC<SineCarouselProps> = ({
             top: '50%',
             left: '50%',
             marginLeft: '-160px',
-            marginTop: '-190px',
             willChange: 'transform',
             pointerEvents: 'none',
           }}
         >
-          {items[i % items.length]}
+          {/* This static layer centres each card by its own natural height,
+              allowing mixed-height cards without relying on a fixed offset. */}
+          <Box sx={{ transform: 'translateY(-50%)' }}>
+            <Box
+              component={motion.div}
+              initial={{ scale: baseScale, y: 0, rotate: 0 }}
+              animate={selectedCard === i
+                ? {
+                    scale: peakScale,
+                    y: -28,
+                    rotate: -1,
+                    filter: 'drop-shadow(0 18px 24px rgba(72, 48, 48, 0.22))',
+                  }
+                : {
+                    scale: baseScale,
+                    y: 0,
+                    rotate: 0,
+                    filter: 'drop-shadow(0 0 0 rgba(72, 48, 48, 0))',
+                  }}
+              transition={{
+                type: 'spring',
+                stiffness: 170,
+                damping: 11,
+                mass: 0.8,
+              }}
+              sx={{ transformOrigin: 'center center' }}
+            >
+              {items[i % items.length]}
+            </Box>
+          </Box>
         </Box>
       ))}
     </Box>
