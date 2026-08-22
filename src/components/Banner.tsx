@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Box, Typography } from '@mui/material';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import RevealText from './motion/RevealText';
 import ImageMosaic from './motion/ImageMosaic';
 import MaskedWords from './motion/MaskedWords';
@@ -24,6 +24,8 @@ const MOSAIC_IMAGES = [
 
 const Banner: React.FC<BannerProps> = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const heroIsInView = useInView(heroRef, { margin: '-8% 0px -8% 0px' });
+  const reducedMotion = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -71,10 +73,29 @@ const Banner: React.FC<BannerProps> = () => {
           sx={{ height: '118%', width: '100%' }}
         >
           <Box
-            component="img"
+            component={motion.img}
             src="/images/Doggy-banner.jpg"
             alt="A pug resting on a wooden floor"
-            sx={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
+            animate={
+              !reducedMotion && heroIsInView
+                ? { scale: [1.015, 1.105], x: ['0%', '-1.4%'], y: ['0%', '1.2%'] }
+                : { scale: 1.015, x: '0%', y: '0%' }
+            }
+            transition={{
+              duration: 18,
+              ease: 'easeInOut',
+              repeat: reducedMotion ? 0 : Infinity,
+              repeatType: 'mirror',
+            }}
+            sx={{
+              display: 'block',
+              width: '103%',
+              height: '103%',
+              ml: '-1.5%',
+              mt: '-1.5%',
+              objectFit: 'cover',
+              willChange: reducedMotion ? 'auto' : 'transform',
+            }}
           />
         </Box>
 

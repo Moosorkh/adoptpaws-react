@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Typography, 
@@ -16,9 +16,17 @@ import ContactForm from '../components/ContactForm';
 import { api } from '../services/api';
 import RevealText from '../components/motion/RevealText';
 import MaskedWords from '../components/motion/MaskedWords';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 
 const ContactSection: React.FC = () => {
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
+  const headingY = useTransform(scrollYProgress, [0, 1], [18, -18]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -40,37 +48,43 @@ const ContactSection: React.FC = () => {
   ];
 
   return (
-    <Box id="contact-section" sx={{ mb: 8, mt: 4, px: { xs: 2, md: 6 } }}>
+    <Box ref={sectionRef} id="contact-section" sx={{ mb: 8, mt: 4, px: { xs: 2, md: 6 } }}>
       <Fade in={true} timeout={800}>
         <Box>
-          <Typography
-            variant="h2"
-            component="h2"
-            sx={{
-              mb: 3,
-              fontWeight: 700,
-              fontSize: { xs: '2rem', md: '3rem' },
-            }}
+          <Box
+            component={motion.div}
+            style={reducedMotion ? undefined : { y: headingY }}
+            sx={{ willChange: reducedMotion ? 'auto' : 'transform' }}
           >
-            <MaskedWords lines={['[ Contact Us ]']} justify="center" />
-          </Typography>
-
-          <RevealText delay={0.2}>
             <Typography
-              variant="h6"
-              component="h3"
+              variant="h2"
+              component="h2"
               sx={{
                 mb: 3,
-                textAlign: 'center',
-                color: 'text.secondary',
-                fontWeight: 400,
-                maxWidth: 700,
-                mx: 'auto'
+                fontWeight: 700,
+                fontSize: { xs: '2rem', md: '3rem' },
               }}
             >
-              Have any questions about our furry friends? Want to know more about the adoption process? We're here to help!
+              <MaskedWords lines={['[ Contact Us ]']} justify="center" />
             </Typography>
-          </RevealText>
+
+            <RevealText delay={0.2}>
+              <Typography
+                variant="h6"
+                component="h3"
+                sx={{
+                  mb: 3,
+                  textAlign: 'center',
+                  color: 'text.secondary',
+                  fontWeight: 400,
+                  maxWidth: 700,
+                  mx: 'auto'
+                }}
+              >
+                Have any questions about our furry friends? Want to know more about the adoption process? We're here to help!
+              </Typography>
+            </RevealText>
+          </Box>
           
           <Grid container spacing={3} alignItems="stretch" sx={{ mt: 3 }}>
             <Grid item xs={12} md={6}>

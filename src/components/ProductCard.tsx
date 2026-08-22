@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   IconButton
 } from '@mui/material';
 import { Favorite, FavoriteBorder } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +36,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(!!initialFavorite);
   const [favoriteId, setFavoriteId] = useState<string | null>(initialFavorite?.id || null);
+  const imageMaskRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress: imageProgress } = useScroll({
+    target: imageMaskRef,
+    offset: ['start end', 'end start'],
+  });
+  const imageY = useTransform(imageProgress, [0, 1], [-18, 18]);
 
   const API_URL = getApiBaseUrl();
 
@@ -143,17 +150,30 @@ const ProductCard: React.FC<ProductCardProps> = ({
       >
         {/* Image sits in a stable mask so it can zoom without resizing the card */}
         <Box
+          ref={imageMaskRef}
           sx={{
             position: 'relative',
             overflow: 'hidden',
             height: { xs: 280, md: 320 },
           }}
         >
-          <CardMedia
-            component="img"
-            image={product.imageUrl}
-            alt={product.name}
+          <Box
+            component={motion.div}
+            style={reducedMotion ? undefined : { y: imageY }}
             sx={{
+              position: 'absolute',
+              top: -18,
+              right: 0,
+              bottom: -18,
+              left: 0,
+              willChange: reducedMotion ? 'auto' : 'transform',
+            }}
+          >
+            <CardMedia
+              component="img"
+              image={product.imageUrl}
+              alt={product.name}
+              sx={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
@@ -161,8 +181,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
               transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease',
               transform: isHovered ? 'scale(1.04)' : 'scale(1)',
               filter: isHovered ? 'grayscale(0%)' : 'grayscale(20%)',
-            }}
-          />
+              }}
+            />
+          </Box>
 
           {/* Breed / age tags slide up out of the bottom edge on hover */}
           <Box

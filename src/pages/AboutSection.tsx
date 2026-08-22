@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, 
   Typography, 
@@ -27,6 +27,7 @@ import StoryTimeline, { StoryChapter } from '../components/motion/StoryTimeline'
 import TeamAccordion, { TeamMember } from '../components/TeamAccordion';
 import StackedCards from '../components/motion/StackedCards';
 import SineCarousel from '../components/motion/SineCarousel';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 
 // Figure images for the history chapters, matched by index.
 const HISTORY_IMAGES = [
@@ -120,6 +121,13 @@ const AboutSection: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(DEFAULT_TEAM_MEMBERS);
   const [historyTimeline, setHistoryTimeline] = useState<StoryChapter[]>([]);
+  const storyImageRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const { scrollYProgress: storyImageProgress } = useScroll({
+    target: storyImageRef,
+    offset: ['start end', 'end start'],
+  });
+  const storyImageY = useTransform(storyImageProgress, [0, 1], [-24, 24]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -290,6 +298,7 @@ const AboutSection: React.FC = () => {
                   </Grid>
                 
                   <Grid
+                    ref={storyImageRef}
                     item
                     xs={12}
                     md={6}
@@ -310,14 +319,17 @@ const AboutSection: React.FC = () => {
                     }}
                   >
                     <Box 
-                      component="img"
+                      component={motion.img}
                       src="/images/about-image.jpg"
                       alt="Dog sitting in front of a laptop looking back"
+                      style={reducedMotion ? undefined : { y: storyImageY }}
                       sx={{
                         width: '100%',
-                        height: '100%',
+                        height: 'calc(100% + 56px)',
+                        mt: '-28px',
                         objectFit: 'cover',
-                        display: 'block'
+                        display: 'block',
+                        willChange: reducedMotion ? 'auto' : 'transform',
                       }}
                     />
                     <Box 
