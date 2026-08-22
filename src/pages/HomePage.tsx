@@ -66,7 +66,7 @@ const HomePage: React.FC = () => {
           <Box sx={{ position: 'sticky', top: { xs: 60, md: 64 }, zIndex: 4 }}>
             <ProductsSection />
           </Box>
-          <Box aria-hidden sx={{ height: { xs: 0, md: '117svh' } }} />
+          <Box aria-hidden sx={{ height: { xs: 0, md: '173svh' } }} />
         </Box>
         <ContactSection />
       </Box>
