@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Container, Grid, Link, IconButton, Divider } from '@mui/material';
+import { Box, Typography, Grid, Link, IconButton, Divider } from '@mui/material';
 import { Facebook, Twitter, Instagram, Email, Phone, LocationOn } from '@mui/icons-material';
 import { scrollToSection, scrollToTop } from '../utils/helpers';
 
@@ -36,7 +36,7 @@ const Footer: React.FC = () => {
         pb: 3
       }}
     >
-      <Container maxWidth="lg">
+      <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 } }}>
         <Box
           onClick={handleLogoClick}
           sx={{ cursor: 'pointer', mb: 6 }}
@@ -175,7 +175,7 @@ const Footer: React.FC = () => {
         <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary' }}>
           &copy; {new Date().getFullYear()} AdoptPaws. All rights reserved. Designed with care and love.
         </Typography>
-      </Container>
+      </Box>
     </Box>
   );
 };
