@@ -53,9 +53,10 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
         onError={onComplete}
         sx={{
           display: 'block',
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
+          width: '100vw',
+          height: '100svh',
+          objectFit: 'cover',
+          objectPosition: { xs: '38% 68%', md: '50% 68%' },
         }}
       />
     </Box>

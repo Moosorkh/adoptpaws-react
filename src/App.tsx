@@ -8,8 +8,11 @@ import { ToastProvider } from './components/ToastProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import IntroVideo from './components/IntroVideo';
 
+const shouldSkipIntro = () =>
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+
 const App: React.FC = () => {
-  const [introComplete, setIntroComplete] = useState(false);
+  const [introComplete, setIntroComplete] = useState(shouldSkipIntro);
   const completeIntro = useCallback(() => setIntroComplete(true), []);
 
   return (
