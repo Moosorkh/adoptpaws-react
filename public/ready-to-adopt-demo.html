@@ -99,16 +99,43 @@ const model=await unpack();
 
 const rig={uHeadYaw:{value:0},uHeadPitch:{value:0},uTailWag:{value:0}};
 function patchDogShader(shader){Object.assign(shader.uniforms,rig);shader.vertexShader=shader.vertexShader.replace('#include <common>',`#include <common>
+varying float vChestSoftMask;
 uniform float uHeadYaw;uniform float uHeadPitch;uniform float uTailWag;
 float headAmount(vec3 p){return smoothstep(0.50,0.72,p.z);}
 float tailAmount(vec3 p){float along=1.0-smoothstep(-0.82,-0.52,p.z);float above=smoothstep(0.10,0.23,p.y);return clamp(along*above,0.0,1.0);}
+float chestSoftMask(vec3 p){
+  float widthMask=1.0-smoothstep(0.15,0.27,abs(p.x+0.035));
+  float heightMask=smoothstep(0.055,0.145,p.y)*(1.0-smoothstep(0.43,0.54,p.y));
+  float depthMask=smoothstep(0.25,0.39,p.z)*(1.0-smoothstep(0.67,0.76,p.z));
+  return widthMask*heightMask*depthMask;
+}
 vec3 rotX(vec3 v,float a){float c=cos(a),s=sin(a);return vec3(v.x,v.y*c-v.z*s,v.y*s+v.z*c);}
 vec3 rotY(vec3 v,float a){float c=cos(a),s=sin(a);return vec3(v.x*c+v.z*s,v.y,-v.x*s+v.z*c);}
 vec3 dogDeformPoint(vec3 p){float ta=tailAmount(p);vec3 tp=vec3(0.015,0.27,-0.55);vec3 tl=p-tp;tl=rotY(tl,uTailWag*ta);tl.y+=abs(uTailWag)*0.025*ta*ta;p=mix(p,tl+tp,ta);float ha=headAmount(p);vec3 hp=vec3(-0.038,0.10,0.50);vec3 hl=p-hp;hl=rotX(hl,uHeadPitch*ha);hl=rotY(hl,uHeadYaw*ha);return mix(p,hl+hp,ha);}
 vec3 dogDeformNormal(vec3 p,vec3 n){float ta=tailAmount(p);n=rotY(n,uTailWag*ta);float ha=headAmount(p);n=rotX(n,uHeadPitch*ha);n=rotY(n,uHeadYaw*ha);return normalize(n);}`)
 .replace('#include <beginnormal_vertex>','vec3 objectNormal = dogDeformNormal(position, normal);')
-.replace('#include <begin_vertex>','vec3 transformed = dogDeformPoint(position);');}
-const dogMaterial=new THREE.MeshPhysicalMaterial({map:model.baseTexture,normalMap:model.normalTexture,normalScale:new THREE.Vector2(.86,.86),color:0xffffff,roughness:.80,metalness:0,sheen:.24,sheenRoughness:.82,sheenColor:new THREE.Color(0xb87838),clearcoat:.012,clearcoatRoughness:.78,side:THREE.DoubleSide});dogMaterial.onBeforeCompile=patchDogShader;dogMaterial.customProgramCacheKey=()=> 'golden-head-eye-track-v2';
+.replace('#include <begin_vertex>','vChestSoftMask = chestSoftMask(position); vec3 transformed = dogDeformPoint(position);');
+shader.fragmentShader=shader.fragmentShader
+.replace('#include <common>',`#include <common>
+varying float vChestSoftMask;`)
+.replace('#include <map_fragment>',`#ifdef USE_MAP
+  vec4 sampledDiffuseColor = texture2D(map,vMapUv);
+  vec2 furTap = vec2(0.00135);
+  vec4 softenedCoat = (
+    sampledDiffuseColor * 2.0 +
+    texture2D(map,vMapUv+vec2(furTap.x,0.0)) +
+    texture2D(map,vMapUv-vec2(furTap.x,0.0)) +
+    texture2D(map,vMapUv+vec2(0.0,furTap.y)) +
+    texture2D(map,vMapUv-vec2(0.0,furTap.y))
+  ) / 6.0;
+  sampledDiffuseColor = mix(sampledDiffuseColor,softenedCoat,vChestSoftMask*0.72);
+  #ifdef DECODE_VIDEO_TEXTURE
+    sampledDiffuseColor = sRGBTransferEOTF(sampledDiffuseColor);
+  #endif
+  diffuseColor *= sampledDiffuseColor;
+#endif`)
+.replace('mapN.xy *= normalScale;','mapN.xy *= normalScale * mix(1.0,0.38,vChestSoftMask);');}
+const dogMaterial=new THREE.MeshPhysicalMaterial({map:model.baseTexture,normalMap:model.normalTexture,normalScale:new THREE.Vector2(.86,.86),color:0xffffff,roughness:.80,metalness:0,sheen:.24,sheenRoughness:.82,sheenColor:new THREE.Color(0xb87838),clearcoat:.012,clearcoatRoughness:.78,side:THREE.DoubleSide});dogMaterial.onBeforeCompile=patchDogShader;dogMaterial.customProgramCacheKey=()=> 'golden-head-eye-track-v3-soft-chest';
 const dogMesh=new THREE.Mesh(model.geometry,dogMaterial);dogMesh.frustumCulled=false;
 const dogRig=new THREE.Group();const MODEL_SCALE=2.22;dogMesh.scale.setScalar(MODEL_SCALE);dogMesh.position.y=-model.geometry.boundingBox.min.y*MODEL_SCALE+.035;dogRig.position.set(0,0,-.18);dogRig.rotation.y=0;dogRig.add(dogMesh);world.add(dogRig);
 
@@ -245,9 +272,18 @@ function updateDog(time,dt){
   pointerEnergy*=Math.exp(-3.6*dt);
 }
 
-function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);renderer.setPixelRatio(Math.min(devicePixelRatio,w<760 ? .9 : 1.25));camera.aspect=w/h;camera.fov=w<760?42:30;camera.position.copy(CAM);camera.lookAt(cameraTarget);camera.updateProjectionMatrix();camera.getWorldDirection(planeNormal);cursorPlane.setFromNormalAndCoplanarPoint(planeNormal,planePoint);const compact=w<760;world.scale.setScalar(compact ? .72 : 1);world.position.y=compact ? .02 : 0}
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);renderer.setPixelRatio(Math.min(devicePixelRatio,w<760 ? .9 : 1.25));camera.aspect=w/h;camera.fov=42;camera.position.copy(CAM);camera.lookAt(cameraTarget);camera.updateProjectionMatrix();camera.getWorldDirection(planeNormal);cursorPlane.setFromNormalAndCoplanarPoint(planeNormal,planePoint);world.scale.setScalar(.72);world.position.y=.02}
+const BALL_EDGE_GUTTER=48;
+function setPointerNdc(event){
+  const safeX=Math.min(BALL_EDGE_GUTTER,innerWidth*.12);
+  const safeY=Math.min(BALL_EDGE_GUTTER,innerHeight*.12);
+  const x=clamp(event.clientX,safeX,innerWidth-safeX);
+  const y=clamp(event.clientY,safeY,innerHeight-safeY);
+  ndc.x=x/innerWidth*2-1;
+  ndc.y=-(y/innerHeight)*2+1;
+}
 function pointerSample(event){const now=performance.now(),dt=Math.max(12,now-lastPointer.t);const dist=Math.hypot(event.clientX-lastPointer.x,event.clientY-lastPointer.y);const normalized=dist/dt*.45;pointerEnergy=Math.max(pointerEnergy,clamp(normalized,0,1));lastPointer={x:event.clientX,y:event.clientY,t:now}}
-stage.addEventListener('pointermove',event=>{pointerSample(event);pointerActive=true;ndc.x=event.clientX/innerWidth*2-1;ndc.y=-(event.clientY/innerHeight)*2+1;if(!ballAttached)attachBall()},{passive:true});stage.addEventListener('pointerenter',event=>{pointerActive=true;ndc.x=event.clientX/innerWidth*2-1;ndc.y=-(event.clientY/innerHeight)*2+1;attachBall()});stage.addEventListener('pointerleave',()=>{pointerActive=false;releaseBall()});stage.addEventListener('pointerdown',()=>{pressAmount=1});addEventListener('resize',resize);
+stage.addEventListener('pointermove',event=>{pointerSample(event);pointerActive=true;setPointerNdc(event);if(!ballAttached)attachBall()},{passive:true});stage.addEventListener('pointerenter',event=>{pointerActive=true;setPointerNdc(event);attachBall()});stage.addEventListener('pointerleave',()=>{pointerActive=false;releaseBall()});stage.addEventListener('pointerdown',()=>{pressAmount=1});addEventListener('resize',resize);
 
 
 resize();ball.position.copy(ballTarget);scene.updateMatrixWorld(true);updateTrackingPupils(0,-.025,0,0);renderer.render(scene,camera);requestAnimationFrame(()=>{loader.hidden=true});let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;const time=now/1000;updateBall(dt);updateDog(time,dt);const px=clamp(ball.position.x/3.4,-1,1),py=clamp((ball.position.y-1.2)/2.4,-1,1);megaTop.style.transform=`translate3d(${px*-1.8}%,${py*-1.2}%,0)`;megaBottom.style.transform=`translate3d(${px*1.8}%,${py*1.2}%,0)`;renderer.render(scene,camera);requestAnimationFrame(loop)}requestAnimationFrame(loop);
