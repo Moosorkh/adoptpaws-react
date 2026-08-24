@@ -46,7 +46,7 @@ const HomePage: React.FC = () => {
       <Banner title="Open Your Heart to a New Friend" />
       
       {/* Full-bleed: each section manages its own horizontal padding */}
-      <Box sx={{ py: 4 }}>
+      <Box sx={{ pt: 4 }}>
         <AboutSection />
         <HowAdoptionWorks />
         <Marquee
