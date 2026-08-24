@@ -25,32 +25,32 @@ const mix = (a: Rgb, b: Rgb, t: number) =>
   )})`;
 
 /**
- * Timeline over the pinned track (1 = 360svh). It opens on the frame the fourth
+ * Timeline over the pinned track (1 = 460svh). It opens on the frame the fourth
  * process card finishes settling.
  *
  * The band rises into view, sweeps sideways and the scene fades out behind it —
  * all three at once — and comes to rest with the invitation centred. That
  * sentence then becomes the portal.
  */
-const APPROACH = [0, 0.244] as const; // slide + ascent + background fade, together
+const APPROACH = [0, 0.38] as const; // extended slide + ascent + background fade
 // Everything but the invitation clears: the band's own surface, its rules, the
 // other words. The sentence is left alone on the dark field.
-const CHROME_OUT = [0.244, 0.3] as const;
-// 0.3 → 0.5 rests on the invitation. It is not idle time: the plate is fully
+const CHROME_OUT = [0.38, 0.43] as const;
+// 0.43 → 0.62 rests on the invitation. It is not idle time: the plate is fully
 // opaque, and the pet index is sliding up and pinning itself behind it, unseen.
 // The aperture cannot open before that finishes or the section would be caught
 // mid-travel through the lettering.
-const COVER_IN = [0.5, 0.56] as const; // the masked cover takes the plate's place
-const SCENE_OUT = [0.56, 0.59] as const; // the fade plate retires behind the aperture
+const COVER_IN = [0.62, 0.68] as const; // the masked cover takes the plate's place
+const SCENE_OUT = [0.68, 0.71] as const; // the fade plate retires behind the aperture
 // The painted sentence gives way to the identical hole beneath it. Invisible:
 // by now the cover is opaque and its aperture already reveals the same cream.
-const PHRASE_OUT = [0.56, 0.6] as const;
+const PHRASE_OUT = [0.68, 0.72] as const;
 // Given a long, unhurried run and finished well before the pin lets go, so the
 // reveal does not detonate straight into the pet index.
-const FLIGHT = [0.58, 0.9] as const;
+const FLIGHT = [0.7, 0.92] as const;
 // The aperture is vast by now but a stem can still clip an edge; retire it.
-const COVER_OUT = [0.85, 0.91] as const;
-// From 0.91 nothing moves at all: the stage is inert and the pet index behind it
+const COVER_OUT = [0.88, 0.94] as const;
+// From 0.94 nothing moves at all: the stage is inert and the pet index behind it
 // is pinned (see HomePage), so the reveal ends on a dead stop before the page
 // hands back to ordinary scrolling.
 
@@ -309,10 +309,10 @@ const Marquee: React.FC<MarqueeProps> = ({
   }
 
   return (
-    // Timed off the process cards' choreography: they finish assembling 80svh
-    // before that section's track ends, so an 80svh pull-up puts the band's
-    // first frame on the frame the fourth card lands.
-    <Box sx={{ position: 'relative', mt: { xs: 0, md: '-80svh' } }}>
+    // The HIW track carries an additional 100svh final hold. Pulling the
+    // marquee up by the same amount keeps its first frame aligned with the
+    // completed card stack and leaves that stack pinned for the full sweep.
+    <Box sx={{ position: 'relative', mt: { xs: 0, md: '-180svh' } }}>
       {band}
 
       <Box
@@ -325,7 +325,7 @@ const Marquee: React.FC<MarqueeProps> = ({
           // brings the pet index up behind the stage for the final 100svh, so it
           // is in place — visible through the lettering — as the pin releases.
           mt: { xs: 0, md: `calc(-100svh - ${BAND_HEIGHT}px)` },
-          height: '460svh',
+          height: '560svh',
           // Brings the pet index up so that it clears the fold just after the
           // fade plate turns fully opaque, travels up and pins itself (HomePage)
           // entirely hidden behind that plate, and is therefore already settled

@@ -397,10 +397,14 @@ const HowAdoptionWorks: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const reducedMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
+  const { scrollYProgress: trackProgress } = useScroll({
     target: trackRef,
     offset: ['start start', 'end end'],
   });
+  // The final viewport is a hold for the extended marquee sweep. Mapping the
+  // first 80% back to the original 0..1 range keeps every card entrance at its
+  // existing scroll position while the assembled scene remains pinned longer.
+  const scrollYProgress = useTransform(trackProgress, [0, 0.8], [0, 1]);
 
   const blobRotate = useTransform(scrollYProgress, [0, 1], [-7, 7]);
   const blobY = useTransform(scrollYProgress, [0, 1], ['-3vh', '3vh']);
@@ -422,7 +426,7 @@ const HowAdoptionWorks: React.FC = () => {
       aria-label="How adoption works"
       sx={{
         position: 'relative',
-        height: { xs: 'auto', md: reducedMotion ? 'calc(100vh - 64px)' : '500vh' },
+        height: { xs: 'auto', md: reducedMotion ? 'calc(100vh - 64px)' : '600vh' },
         bgcolor: '#EAE5D7',
         borderTop: '1px solid',
         borderBottom: '1px solid',
